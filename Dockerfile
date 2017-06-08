@@ -21,6 +21,17 @@ RUN pip install cffi --upgrade \
     && pip install requests --upgrade \
     && pip install 'requests[security]' --upgrade
 
+
+# Install tablemaker
+RUN echo Installing tablemaker \
+    && cd /opt \
+    && TM_VER='tablemaker-2.1.1.Linux_x86_64' \
+    && wget -O ${TM_VER}.tar.gz https://ndownloader.figshare.com/files/3193031 \
+    && tar zxvf ${TM_VER}.tar.gz \
+    && rm -f ${TM_VER}.tar.gz
+
+ENV PATH $PATH:/opt/tablemaker-2.1.1.Linux_x86_64
+
 # -----------------------------------------
 
 COPY ./ /kb/module
