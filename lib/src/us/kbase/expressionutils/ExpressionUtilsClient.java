@@ -11,11 +11,17 @@ import us.kbase.auth.AuthToken;
 import us.kbase.common.service.JsonClientCaller;
 import us.kbase.common.service.JsonClientException;
 import us.kbase.common.service.RpcContext;
+import us.kbase.common.service.UnauthorizedException;
 
 /**
  * <p>Original spec-file module name: ExpressionUtils</p>
  * <pre>
+ * *
  * A KBase module: ExpressionUtils
+ * This module is intended for use by Assemblers to upload RNASeq Expression files
+ * (gtf, fpkm and ctab). The expression files are uploaded as a single compressed file.
+ * Once uploaded, the expression can be downloaded in TODO file formats. This utility
+ * also generates expression levels and tpm expression levels *
  * </pre>
  */
 public class ExpressionUtilsClient {
@@ -28,6 +34,49 @@ public class ExpressionUtilsClient {
      */
     public ExpressionUtilsClient(URL url) {
         caller = new JsonClientCaller(url);
+    }
+    /** Constructs a client with a custom URL.
+     * @param url the URL of the service.
+     * @param token the user's authorization token.
+     * @throws UnauthorizedException if the token is not valid.
+     * @throws IOException if an IOException occurs when checking the token's
+     * validity.
+     */
+    public ExpressionUtilsClient(URL url, AuthToken token) throws UnauthorizedException, IOException {
+        caller = new JsonClientCaller(url, token);
+    }
+
+    /** Constructs a client with a custom URL.
+     * @param url the URL of the service.
+     * @param user the user name.
+     * @param password the password for the user name.
+     * @throws UnauthorizedException if the credentials are not valid.
+     * @throws IOException if an IOException occurs when checking the user's
+     * credentials.
+     */
+    public ExpressionUtilsClient(URL url, String user, String password) throws UnauthorizedException, IOException {
+        caller = new JsonClientCaller(url, user, password);
+    }
+
+    /** Constructs a client with a custom URL
+     * and a custom authorization service URL.
+     * @param url the URL of the service.
+     * @param user the user name.
+     * @param password the password for the user name.
+     * @param auth the URL of the authorization server.
+     * @throws UnauthorizedException if the credentials are not valid.
+     * @throws IOException if an IOException occurs when checking the user's
+     * credentials.
+     */
+    public ExpressionUtilsClient(URL url, String user, String password, URL auth) throws UnauthorizedException, IOException {
+        caller = new JsonClientCaller(url, user, password, auth);
+    }
+
+    /** Get the token this client uses to communicate with the server.
+     * @return the authorization token.
+     */
+    public AuthToken getToken() {
+        return caller.getToken();
     }
 
     /** Get the URL of the service with which this client communicates.
@@ -116,6 +165,60 @@ public class ExpressionUtilsClient {
 
     public void setServiceVersion(String newValue) {
         this.serviceVersion = newValue;
+    }
+
+    /**
+     * <p>Original spec-file function name: upload_expression</p>
+     * <pre>
+     * *  Uploads the expression  *
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.expressionutils.UploadExpressionParams UploadExpressionParams}
+     * @return   instance of type {@link us.kbase.expressionutils.UploadExpressionOutput UploadExpressionOutput}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public UploadExpressionOutput uploadExpression(UploadExpressionParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<UploadExpressionOutput>> retType = new TypeReference<List<UploadExpressionOutput>>() {};
+        List<UploadExpressionOutput> res = caller.jsonrpcCall("ExpressionUtils.upload_expression", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
+     * <p>Original spec-file function name: download_expression</p>
+     * <pre>
+     * * Downloadsexpression files TODO ???  *
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.expressionutils.DownloadExpressionParams DownloadExpressionParams}
+     * @return   instance of type {@link us.kbase.expressionutils.DownloadExpressionOutput DownloadExpressionOutput}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public DownloadExpressionOutput downloadExpression(DownloadExpressionParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<DownloadExpressionOutput>> retType = new TypeReference<List<DownloadExpressionOutput>>() {};
+        List<DownloadExpressionOutput> res = caller.jsonrpcCall("ExpressionUtils.download_expression", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
+     * <p>Original spec-file function name: export_expression</p>
+     * <pre>
+     * * Wrapper function for use by in-narrative downloaders to download expressions from shock *
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.expressionutils.ExportParams ExportParams}
+     * @return   parameter "output" of type {@link us.kbase.expressionutils.ExportOutput ExportOutput}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public ExportOutput exportExpression(ExportParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<ExportOutput>> retType = new TypeReference<List<ExportOutput>>() {};
+        List<ExportOutput> res = caller.jsonrpcCall("ExpressionUtils.export_expression", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
     }
 
     public Map<String, Object> status(RpcContext... jsonRpcContext) throws IOException, JsonClientException {

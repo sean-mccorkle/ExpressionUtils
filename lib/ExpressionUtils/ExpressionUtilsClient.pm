@@ -12,6 +12,7 @@ eval {
     $get_time = sub { Time::HiRes::gettimeofday() };
 };
 
+use Bio::KBase::AuthToken;
 
 # Client version should match Impl version
 # This is a Semantic Version number,
@@ -26,6 +27,11 @@ ExpressionUtils::ExpressionUtilsClient
 
 
 A KBase module: ExpressionUtils
+
+This module is intended for use by Assemblers to upload RNASeq Expression files
+(gtf, fpkm and ctab). The expression files are uploaded as a single compressed file.
+Once uploaded, the expression can be downloaded in TODO file formats. This utility
+also generates expression levels and tpm expression levels *
 
 
 =cut
@@ -74,6 +80,27 @@ sub new
 	push(@{$self->{headers}}, 'Kbrpc-Errordest', $self->{kbrpc_error_dest});
     }
 
+    #
+    # This module requires authentication.
+    #
+    # We create an auth token, passing through the arguments that we were (hopefully) given.
+
+    {
+	my %arg_hash2 = @args;
+	if (exists $arg_hash2{"token"}) {
+	    $self->{token} = $arg_hash2{"token"};
+	} elsif (exists $arg_hash2{"user_id"}) {
+	    my $token = Bio::KBase::AuthToken->new(@args);
+	    if (!$token->error_message) {
+	        $self->{token} = $token->token;
+	    }
+	}
+	
+	if (exists $self->{token})
+	{
+	    $self->{client}->{token} = $self->{token};
+	}
+    }
 
     my $ua = $self->{client}->ua;	 
     my $timeout = $ENV{CDMI_TIMEOUT} || (30 * 60);	 
@@ -84,6 +111,314 @@ sub new
 }
 
 
+
+
+=head2 upload_expression
+
+  $return = $obj->upload_expression($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is an ExpressionUtils.UploadExpressionParams
+$return is an ExpressionUtils.UploadExpressionOutput
+UploadExpressionParams is a reference to a hash where the following keys are defined:
+	destination_ref has a value which is a string
+	source_dir has a value which is a string
+	condition has a value which is a string
+	assembly_or_genome_ref has a value which is a string
+	annotation_ref has a value which is a string
+	mapped_rnaseq_alignment has a value which is a reference to a hash where the key is a string and the value is a string
+	data_quality_level has a value which is an int
+	original_median has a value which is a float
+	tool_used has a value which is a string
+	tool_version has a value which is a string
+	tool_opts has a value which is a reference to a hash where the key is a string and the value is a string
+	description has a value which is a string
+	platform has a value which is a string
+	source has a value which is a string
+	external_source_date has a value which is a string
+	processing_comments has a value which is a string
+UploadExpressionOutput is a reference to a hash where the following keys are defined:
+	obj_ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is an ExpressionUtils.UploadExpressionParams
+$return is an ExpressionUtils.UploadExpressionOutput
+UploadExpressionParams is a reference to a hash where the following keys are defined:
+	destination_ref has a value which is a string
+	source_dir has a value which is a string
+	condition has a value which is a string
+	assembly_or_genome_ref has a value which is a string
+	annotation_ref has a value which is a string
+	mapped_rnaseq_alignment has a value which is a reference to a hash where the key is a string and the value is a string
+	data_quality_level has a value which is an int
+	original_median has a value which is a float
+	tool_used has a value which is a string
+	tool_version has a value which is a string
+	tool_opts has a value which is a reference to a hash where the key is a string and the value is a string
+	description has a value which is a string
+	platform has a value which is a string
+	source has a value which is a string
+	external_source_date has a value which is a string
+	processing_comments has a value which is a string
+UploadExpressionOutput is a reference to a hash where the following keys are defined:
+	obj_ref has a value which is a string
+
+
+=end text
+
+=item Description
+
+Uploads the expression  *
+
+=back
+
+=cut
+
+ sub upload_expression
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function upload_expression (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to upload_expression:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'upload_expression');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "ExpressionUtils.upload_expression",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'upload_expression',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method upload_expression",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'upload_expression',
+				       );
+    }
+}
+ 
+
+
+=head2 download_expression
+
+  $return = $obj->download_expression($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is an ExpressionUtils.DownloadExpressionParams
+$return is an ExpressionUtils.DownloadExpressionOutput
+DownloadExpressionParams is a reference to a hash where the following keys are defined:
+	source_ref has a value which is a string
+	downloadCTAB has a value which is an ExpressionUtils.boolean
+	downloadTPM has a value which is an ExpressionUtils.boolean
+boolean is an int
+DownloadExpressionOutput is a reference to a hash where the following keys are defined:
+	ws_id has a value which is a string
+	destination_dir has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is an ExpressionUtils.DownloadExpressionParams
+$return is an ExpressionUtils.DownloadExpressionOutput
+DownloadExpressionParams is a reference to a hash where the following keys are defined:
+	source_ref has a value which is a string
+	downloadCTAB has a value which is an ExpressionUtils.boolean
+	downloadTPM has a value which is an ExpressionUtils.boolean
+boolean is an int
+DownloadExpressionOutput is a reference to a hash where the following keys are defined:
+	ws_id has a value which is a string
+	destination_dir has a value which is a string
+
+
+=end text
+
+=item Description
+
+Downloadsexpression files TODO ???  *
+
+=back
+
+=cut
+
+ sub download_expression
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function download_expression (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to download_expression:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'download_expression');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "ExpressionUtils.download_expression",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'download_expression',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method download_expression",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'download_expression',
+				       );
+    }
+}
+ 
+
+
+=head2 export_expression
+
+  $output = $obj->export_expression($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is an ExpressionUtils.ExportParams
+$output is an ExpressionUtils.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	source_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is an ExpressionUtils.ExportParams
+$output is an ExpressionUtils.ExportOutput
+ExportParams is a reference to a hash where the following keys are defined:
+	source_ref has a value which is a string
+ExportOutput is a reference to a hash where the following keys are defined:
+	shock_id has a value which is a string
+
+
+=end text
+
+=item Description
+
+Wrapper function for use by in-narrative downloaders to download expressions from shock *
+
+=back
+
+=cut
+
+ sub export_expression
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function export_expression (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to export_expression:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'export_expression');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "ExpressionUtils.export_expression",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'export_expression',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method export_expression",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'export_expression',
+				       );
+    }
+}
+ 
   
 sub status
 {
@@ -119,7 +454,7 @@ sub status
 sub version {
     my ($self) = @_;
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
-        method => "${last_module.module_name}.version",
+        method => "ExpressionUtils.version",
         params => [],
     });
     if ($result) {
@@ -127,16 +462,16 @@ sub version {
             Bio::KBase::Exceptions::JSONRPC->throw(
                 error => $result->error_message,
                 code => $result->content->{code},
-                method_name => '${last_method.name}',
+                method_name => 'export_expression',
             );
         } else {
             return wantarray ? @{$result->result} : $result->result->[0];
         }
     } else {
         Bio::KBase::Exceptions::HTTP->throw(
-            error => "Error invoking method ${last_method.name}",
+            error => "Error invoking method export_expression",
             status_line => $self->{client}->status_line,
-            method_name => '${last_method.name}',
+            method_name => 'export_expression',
         );
     }
 }
@@ -170,6 +505,305 @@ sub _validate_version {
 }
 
 =head1 TYPES
+
+
+
+=head2 boolean
+
+=over 4
+
+
+
+=item Description
+
+A boolean - 0 for false, 1 for true.
+@range (0, 1)
+
+
+=item Definition
+
+=begin html
+
+<pre>
+an int
+</pre>
+
+=end html
+
+=begin text
+
+an int
+
+=end text
+
+=back
+
+
+
+=head2 UploadExpressionParams
+
+=over 4
+
+
+
+=item Description
+
+*    Required input parameters for uploading a reads expression data
+
+        string   destination_ref                -          object reference of expression data.
+                                            The object ref is 'ws_name_or_id/obj_name_or_id'
+                                            where ws_name_or_id is the workspace name or id
+                                            and obj_name_or_id is the object name or id
+
+        string   source_dir                        -       Source: directory with the files to be uploaded
+        string   condition                    -
+        string   assembly_or_genome_ref -          ?? workspace object ref of assembly or genome
+        annotation that was used to build the alignment
+            string annotation_id                    -        ?? is this the same as assembly ref ??
+            mapping mapped_alignment            -        ?? is this alignment_ref?
+    *
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+destination_ref has a value which is a string
+source_dir has a value which is a string
+condition has a value which is a string
+assembly_or_genome_ref has a value which is a string
+annotation_ref has a value which is a string
+mapped_rnaseq_alignment has a value which is a reference to a hash where the key is a string and the value is a string
+data_quality_level has a value which is an int
+original_median has a value which is a float
+tool_used has a value which is a string
+tool_version has a value which is a string
+tool_opts has a value which is a reference to a hash where the key is a string and the value is a string
+description has a value which is a string
+platform has a value which is a string
+source has a value which is a string
+external_source_date has a value which is a string
+processing_comments has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+destination_ref has a value which is a string
+source_dir has a value which is a string
+condition has a value which is a string
+assembly_or_genome_ref has a value which is a string
+annotation_ref has a value which is a string
+mapped_rnaseq_alignment has a value which is a reference to a hash where the key is a string and the value is a string
+data_quality_level has a value which is an int
+original_median has a value which is a float
+tool_used has a value which is a string
+tool_version has a value which is a string
+tool_opts has a value which is a reference to a hash where the key is a string and the value is a string
+description has a value which is a string
+platform has a value which is a string
+source has a value which is a string
+external_source_date has a value which is a string
+processing_comments has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 UploadExpressionOutput
+
+=over 4
+
+
+
+=item Description
+
+*     Output from upload expression    *
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+obj_ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+obj_ref has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 DownloadExpressionParams
+
+=over 4
+
+
+
+=item Description
+
+*
+Required input parameters for downloading expression
+string source_ref         -             object reference of expression source. The
+                            object ref is 'ws_name_or_id/obj_name_or_id'
+                            where ws_name_or_id is the workspace name or id
+                            and obj_name_or_id is the object name or id
+    *
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+source_ref has a value which is a string
+downloadCTAB has a value which is an ExpressionUtils.boolean
+downloadTPM has a value which is an ExpressionUtils.boolean
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+source_ref has a value which is a string
+downloadCTAB has a value which is an ExpressionUtils.boolean
+downloadTPM has a value which is an ExpressionUtils.boolean
+
+
+=end text
+
+=back
+
+
+
+=head2 DownloadExpressionOutput
+
+=over 4
+
+
+
+=item Description
+
+*  The output of the download method.  *
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+ws_id has a value which is a string
+destination_dir has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+ws_id has a value which is a string
+destination_dir has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 ExportParams
+
+=over 4
+
+
+
+=item Description
+
+*
+Required input parameters for exporting expression
+
+string   source_ref         -          object reference of alignment source. The
+                            object ref is 'ws_name_or_id/obj_name_or_id'
+                            where ws_name_or_id is the workspace name or id
+                            and obj_name_or_id is the object name or id
+     *
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+source_ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+source_ref has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 ExportOutput
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+shock_id has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+shock_id has a value which is a string
+
+
+=end text
+
+=back
 
 
 

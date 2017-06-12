@@ -33,6 +33,77 @@ class ExpressionUtils(object):
             trust_all_ssl_certificates=trust_all_ssl_certificates,
             auth_svc=auth_svc)
 
+    def upload_expression(self, params, context=None):
+        """
+        Uploads the expression  *
+        :param params: instance of type "UploadExpressionParams" (*   
+           Required input parameters for uploading a reads expression data
+           string   destination_ref                -          object
+           reference of expression data. The object ref is
+           'ws_name_or_id/obj_name_or_id' where ws_name_or_id is the
+           workspace name or id and obj_name_or_id is the object name or id
+           string   source_dir                        -       Source:
+           directory with the files to be uploaded string   condition        
+           - string   assembly_or_genome_ref -          ?? workspace object
+           ref of assembly or genome annotation that was used to build the
+           alignment string annotation_id                    -        ?? is
+           this the same as assembly ref ?? mapping mapped_alignment         
+           -        ?? is this alignment_ref? *) -> structure: parameter
+           "destination_ref" of String, parameter "source_dir" of String,
+           parameter "condition" of String, parameter
+           "assembly_or_genome_ref" of String, parameter "annotation_ref" of
+           String, parameter "mapped_rnaseq_alignment" of mapping from String
+           to String, parameter "data_quality_level" of Long, parameter
+           "original_median" of Double, parameter "tool_used" of String,
+           parameter "tool_version" of String, parameter "tool_opts" of
+           mapping from String to String, parameter "description" of String,
+           parameter "platform" of String, parameter "source" of String,
+           parameter "external_source_date" of String, parameter
+           "processing_comments" of String
+        :returns: instance of type "UploadExpressionOutput" (*     Output
+           from upload expression    *) -> structure: parameter "obj_ref" of
+           String
+        """
+        return self._client.call_method(
+            'ExpressionUtils.upload_expression',
+            [params], self._service_ver, context)
+
+    def download_expression(self, params, context=None):
+        """
+        Downloadsexpression files TODO ???  *
+        :param params: instance of type "DownloadExpressionParams" (*
+           Required input parameters for downloading expression string
+           source_ref         -             object reference of expression
+           source. The object ref is 'ws_name_or_id/obj_name_or_id' where
+           ws_name_or_id is the workspace name or id and obj_name_or_id is
+           the object name or id *) -> structure: parameter "source_ref" of
+           String, parameter "downloadCTAB" of type "boolean" (A boolean - 0
+           for false, 1 for true. @range (0, 1)), parameter "downloadTPM" of
+           type "boolean" (A boolean - 0 for false, 1 for true. @range (0, 1))
+        :returns: instance of type "DownloadExpressionOutput" (*  The output
+           of the download method.  *) -> structure: parameter "ws_id" of
+           String, parameter "destination_dir" of String
+        """
+        return self._client.call_method(
+            'ExpressionUtils.download_expression',
+            [params], self._service_ver, context)
+
+    def export_expression(self, params, context=None):
+        """
+        Wrapper function for use by in-narrative downloaders to download expressions from shock *
+        :param params: instance of type "ExportParams" (* Required input
+           parameters for exporting expression string   source_ref         - 
+           object reference of alignment source. The object ref is
+           'ws_name_or_id/obj_name_or_id' where ws_name_or_id is the
+           workspace name or id and obj_name_or_id is the object name or id
+           *) -> structure: parameter "source_ref" of String
+        :returns: instance of type "ExportOutput" -> structure: parameter
+           "shock_id" of String
+        """
+        return self._client.call_method(
+            'ExpressionUtils.export_expression',
+            [params], self._service_ver, context)
+
     def status(self, context=None):
         return self._client.call_method('ExpressionUtils.status',
                                         [], self._service_ver, context)
