@@ -16,7 +16,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * <pre>
  * *
  * Required input parameters for downloading expression
- * string source_ref         -             object reference of expression source. The
+ * string source_ref         -       object reference of expression source. The
  *                             object ref is 'ws_name_or_id/obj_name_or_id'
  *                             where ws_name_or_id is the workspace name or id
  *                             and obj_name_or_id is the object name or id
@@ -27,18 +27,12 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("com.googlecode.jsonschema2pojo")
 @JsonPropertyOrder({
-    "source_ref",
-    "downloadCTAB",
-    "downloadTPM"
+    "source_ref"
 })
 public class DownloadExpressionParams {
 
     @JsonProperty("source_ref")
     private String sourceRef;
-    @JsonProperty("downloadCTAB")
-    private Long downloadCTAB;
-    @JsonProperty("downloadTPM")
-    private Long downloadTPM;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("source_ref")
@@ -56,36 +50,6 @@ public class DownloadExpressionParams {
         return this;
     }
 
-    @JsonProperty("downloadCTAB")
-    public Long getDownloadCTAB() {
-        return downloadCTAB;
-    }
-
-    @JsonProperty("downloadCTAB")
-    public void setDownloadCTAB(Long downloadCTAB) {
-        this.downloadCTAB = downloadCTAB;
-    }
-
-    public DownloadExpressionParams withDownloadCTAB(Long downloadCTAB) {
-        this.downloadCTAB = downloadCTAB;
-        return this;
-    }
-
-    @JsonProperty("downloadTPM")
-    public Long getDownloadTPM() {
-        return downloadTPM;
-    }
-
-    @JsonProperty("downloadTPM")
-    public void setDownloadTPM(Long downloadTPM) {
-        this.downloadTPM = downloadTPM;
-    }
-
-    public DownloadExpressionParams withDownloadTPM(Long downloadTPM) {
-        this.downloadTPM = downloadTPM;
-        return this;
-    }
-
     @JsonAnyGetter
     public Map<String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -98,7 +62,7 @@ public class DownloadExpressionParams {
 
     @Override
     public String toString() {
-        return ((((((((("DownloadExpressionParams"+" [sourceRef=")+ sourceRef)+", downloadCTAB=")+ downloadCTAB)+", downloadTPM=")+ downloadTPM)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((("DownloadExpressionParams"+" [sourceRef=")+ sourceRef)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

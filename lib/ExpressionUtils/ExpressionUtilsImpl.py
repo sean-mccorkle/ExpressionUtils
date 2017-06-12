@@ -3,7 +3,6 @@
 import os
 import time
 import shutil
-import tempfile
 import glob
 from datetime import datetime
 
@@ -28,8 +27,9 @@ class ExpressionUtils:
 
 This module is intended for use by Assemblers to upload RNASeq Expression files
 (gtf, fpkm and ctab). The expression files are uploaded as a single compressed file.
-Once uploaded, the expression can be downloaded in TODO file formats. This utility
-also generates expression levels and tpm expression levels *
+This module also generates expression levels and tpm expression levels from the uploaded
+files and saves them in the workspace object. Once uploaded, the expression files can be
+downloaded in the specified directory.
     '''
 
     ######## WARNING FOR GEVENT USERS ####### noqa
@@ -40,7 +40,7 @@ also generates expression levels and tpm expression levels *
     ######################################### noqa
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/kbaseapps/ExpressionUtils.git"
-    GIT_COMMIT_HASH = "afbd2ce6cb88f68538a1f96983b5552eae5395e9"
+    GIT_COMMIT_HASH = "bad753579d17c55a83f2f6d2e888e0ff2243c6ba"
 
     #BEGIN_CLASS_HEADER
 
@@ -113,9 +113,9 @@ also generates expression levels and tpm expression levels *
         self._check_required_param(params, [self.PARAM_IN_DST_REF,
                                             self.PARAM_IN_SRC_DIR,
                                             self.PARAM_IN_CONDITION,
-                                            self.PARAM_IN_MAPPED_ALIGNMENT,
                                             self.PARAM_IN_ASM_GEN_REF,
                                             self.PARAM_IN_ANNOTATION_REF,
+                                            self.PARAM_IN_MAPPED_ALIGNMENT,
                                             self.PARAM_IN_TOOL_USED,
                                             self.PARAM_IN_TOOL_VER,
                                             ])
@@ -164,25 +164,26 @@ also generates expression levels and tpm expression levels *
         Uploads the expression  *
         :param params: instance of type "UploadExpressionParams" (*   
            Required input parameters for uploading a reads expression data
-           string   destination_ref                -          object
-           reference of expression data. The object ref is
-           'ws_name_or_id/obj_name_or_id' where ws_name_or_id is the
-           workspace name or id and obj_name_or_id is the object name or id
-           string   source_dir                        -       Source:
-           directory with the files to be uploaded string   condition        
-           - string   assembly_or_genome_ref -          ?? workspace object
-           ref of assembly or genome annotation that was used to build the
-           alignment string annotation_id                    -        ?? is
-           this the same as assembly ref ?? mapping mapped_alignment         
-           -        ?? is this alignment_ref? *) -> structure: parameter
+           string   destination_ref        -   object reference of expression
+           data. The object ref is 'ws_name_or_id/obj_name_or_id' where
+           ws_name_or_id is the workspace name or id and obj_name_or_id is
+           the object name or id string   source_dir             -  
+           directory with the files to be uploaded string  
+           assembly_or_genome_ref -   workspace object ref of assembly or
+           genome annotation that was used to build the alignment string  
+           annotation_ref         -   annotation ref mapping 
+           mapped_alignment       -   mapping of read_lib_ref and
+           alignment_ref string   condition                    - string  
+           tool_used              -   stringtie or  cufflinks string  
+           tool_version           - *) -> structure: parameter
            "destination_ref" of String, parameter "source_dir" of String,
-           parameter "condition" of String, parameter
-           "assembly_or_genome_ref" of String, parameter "annotation_ref" of
-           String, parameter "mapped_rnaseq_alignment" of mapping from String
-           to String, parameter "data_quality_level" of Long, parameter
-           "original_median" of Double, parameter "tool_used" of String,
-           parameter "tool_version" of String, parameter "tool_opts" of
-           mapping from String to String, parameter "description" of String,
+           parameter "assembly_or_genome_ref" of String, parameter
+           "annotation_ref" of String, parameter "mapped_alignment" of
+           mapping from String to String, parameter "condition" of String,
+           parameter "tool_used" of String, parameter "tool_version" of
+           String, parameter "tool_opts" of mapping from String to String,
+           parameter "data_quality_level" of Long, parameter
+           "original_median" of Double, parameter "description" of String,
            parameter "platform" of String, parameter "source" of String,
            parameter "external_source_date" of String, parameter
            "processing_comments" of String
@@ -206,6 +207,14 @@ also generates expression levels and tpm expression levels *
                                            'pack': 'targz'
                                           })
 
+        """
+        move the tarfile created in the source directory one level up
+        """
+        path, dir = os.path.split(source_dir)
+        tarfile = dir + '.tar.gz'
+        if os.path.isfile(os.path.join(source_dir, tarfile)):
+            shutil.move(os.path.join(source_dir, tarfile), os.path.join(path, tarfile))
+
         file_handle = uploaded_file['handle']
         file_size = uploaded_file['size']
 
@@ -224,7 +233,7 @@ also generates expression levels and tpm expression levels *
                             'tpm_expression_levels': tpm_expression_levels
                            }
 
-        optional_params = [
+        additional_params = [
                             self.PARAM_IN_CONDITION,
                             self.PARAM_IN_TOOL_USED,
                             self.PARAM_IN_TOOL_VER,
@@ -239,7 +248,7 @@ also generates expression levels and tpm expression levels *
                             self.PARAM_IN_SRC
                           ]
         
-        for opt_param in optional_params:
+        for opt_param in additional_params:
             if opt_param in params and params[opt_param] is not None:
                 expression_data[opt_param] = params[opt_param]
 
@@ -268,16 +277,14 @@ also generates expression levels and tpm expression levels *
 
     def download_expression(self, ctx, params):
         """
-        Downloadsexpression files TODO ???  *
+        Downloads expression *
         :param params: instance of type "DownloadExpressionParams" (*
            Required input parameters for downloading expression string
-           source_ref         -             object reference of expression
-           source. The object ref is 'ws_name_or_id/obj_name_or_id' where
+           source_ref         -       object reference of expression source.
+           The object ref is 'ws_name_or_id/obj_name_or_id' where
            ws_name_or_id is the workspace name or id and obj_name_or_id is
            the object name or id *) -> structure: parameter "source_ref" of
-           String, parameter "downloadCTAB" of type "boolean" (A boolean - 0
-           for false, 1 for true. @range (0, 1)), parameter "downloadTPM" of
-           type "boolean" (A boolean - 0 for false, 1 for true. @range (0, 1))
+           String
         :returns: instance of type "DownloadExpressionOutput" (*  The output
            of the download method.  *) -> structure: parameter "ws_id" of
            String, parameter "destination_dir" of String

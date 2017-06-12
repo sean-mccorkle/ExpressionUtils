@@ -8,7 +8,6 @@ import inspect
 import tarfile
 import requests
 import tempfile
-from zipfile import ZipFile
 from datetime import datetime
 from distutils.dir_util import copy_tree
 
@@ -248,6 +247,7 @@ class ExpressionUtilsTest(unittest.TestCase):
         cls.staged[wsobj_name] = {'info': None,
                                   'ref': assembly_ref}
 
+
     @classmethod
     def upload_alignment(cls, wsobjname, file_name):
         align_path = os.path.join(cls.scratch, file_name)
@@ -391,21 +391,24 @@ class ExpressionUtilsTest(unittest.TestCase):
 
         f = d['file']
         self.assertEqual(f['file_name'], self.uploaded_tar)
+        self.assertEqual(f['remote_md5'], self.md5(os.path.join(self.scratch, self.uploaded_tar)))
 
-        node = f['id']
-        self.delete_shock_node(node)
+        self.handles_to_delete.append(f['id'])
 
 
-    def check_file(self, file_path1, file_path2):
+    def check_files(self, new_dir, orig_dir):
 
-        dir1, file_name1 = os.path.split(file_path1)
-        dir2, file_name2 = os.path.split(file_path2)
+        self.assertEqual(len(os.listdir(new_dir)),
+                         len(os.listdir(orig_dir)))
 
-        self.assertEqual(file_name1, file_name2)
-        self.assertEqual(self.getSize(file_path1), self.getSize(file_path2))
-        self.assertEqual(self.md5(file_path1), self.md5(file_path2))
+        for new_file in os.listdir(new_dir):
+            new_file_path = os.path.join(new_dir, new_file)
+            orig_file_path = os.path.join(orig_dir, new_file)
 
-        print('############### Files equivalent: ' + file_path1 + ', ' + file_path2)
+            self.assertEqual(self.getSize(new_file_path), self.getSize(orig_file_path))
+            self.assertEqual(self.md5(new_file_path), self.md5(orig_file_path))
+
+            print("Files checked: " + new_file_path + ', ' + orig_file_path )
 
 
     def download_expression_success(self, obj_name):
@@ -420,17 +423,10 @@ class ExpressionUtilsTest(unittest.TestCase):
         pprint(ret)
         print("========================================================")
 
-        self.assertEqual(len(os.listdir(ret['destination_dir'])),
-                         len(os.listdir(ret['upload_dir_path'])))
-
-        for name in os.listdir(ret['destination_dir']):
-            downloaded_file = os.path.join(ret['destination_dir'], name)
-            dir, file_name = os.path.split(name)
-            uploaded_file = os.path.join(self.upload_dir, file_name)
-            self.check_file(name, downloaded_file, uploaded_file)
+        self.check_files(ret['destination_dir'], self.upload_dir_path)
 
 
-    def test_upload_download_success(self):
+    def test_an_upload_download_success(self):
 
         params = dictmerge({'destination_ref': self.getWsName() + '/test_upload_expression',
                             'source_dir': self.upload_dir_path,
@@ -439,41 +435,44 @@ class ExpressionUtilsTest(unittest.TestCase):
 
         self.download_expression_success('test_upload_expression')
 
-    '''
-    def export_expression_success(self, staged_name, export_params):
+
+    def export_expression_success(self, obj_name, export_params):
 
         test_name = inspect.stack()[1][3]
         print('\n*** starting expected export pass test: ' + test_name + ' **')
-        export_params['source_ref'] = self.staged[staged_name]['ref']
+        export_params['source_ref'] = self.getWsName() + '/' + obj_name
         shocknode = self.getImpl().export_expression(self.ctx, export_params)[0]['shock_id']
         node_url = self.shockURL + '/node/' + shocknode
         headers = {'Authorization': 'OAuth ' + self.token}
         r = requests.get(node_url, headers=headers, allow_redirects=True)
         fn = r.json()['data']['file']['name']
-        self.assertEquals(fn, staged_name + '.tar.gz')
-        tempdir = tempfile.mkdtemp(dir=self.scratch)
-        file_path = os.path.join(tempdir, test_name) + '.tar.gz'
-        print('zip file path: ' + file_path)
+        self.assertEquals(fn, self.uploaded_tar)
+        temp_dir = tempfile.mkdtemp(dir=self.scratch)
+        export_dir = self.upload_dir.replace('upload', 'export')
+        export_dir_path = os.path.join(temp_dir, export_dir)
+        export_file_path = export_dir_path + '.tar.gz'
+        print('export file path: ' + export_file_path)
         print('downloading shocknode ' + shocknode)
-        with open(file_path, 'wb') as fhandle:
+        with open(export_file_path, 'wb') as fhandle:
             r = requests.get(node_url + '?download_raw', stream=True,
                              headers=headers, allow_redirects=True)
             for chunk in r.iter_content(1024):
                 if not chunk:
                     break
                 fhandle.write(chunk)
-        with ZipFile(file_path) as z:
-            z.extractall(tempdir)
-        print('zip file contents: ' + str(os.listdir(tempdir)))
+        tar = tarfile.open(export_file_path)
+        tar.extractall(path=export_dir_path)
+        tar.close()
+
+        self.check_files(export_dir_path, self.upload_dir_path)
 
 
     def test_success_export_expression(self):
 
         opt_params = {}
-
         self.export_expression_success('test_upload_expression', opt_params)
                             
-
+    '''
     def fail_upload_expression(self, params, error, exception=ValueError, do_startswith=False):
 
         test_name = inspect.stack()[1][3]

@@ -38,25 +38,26 @@ class ExpressionUtils(object):
         Uploads the expression  *
         :param params: instance of type "UploadExpressionParams" (*   
            Required input parameters for uploading a reads expression data
-           string   destination_ref                -          object
-           reference of expression data. The object ref is
-           'ws_name_or_id/obj_name_or_id' where ws_name_or_id is the
-           workspace name or id and obj_name_or_id is the object name or id
-           string   source_dir                        -       Source:
-           directory with the files to be uploaded string   condition        
-           - string   assembly_or_genome_ref -          ?? workspace object
-           ref of assembly or genome annotation that was used to build the
-           alignment string annotation_id                    -        ?? is
-           this the same as assembly ref ?? mapping mapped_alignment         
-           -        ?? is this alignment_ref? *) -> structure: parameter
+           string   destination_ref        -   object reference of expression
+           data. The object ref is 'ws_name_or_id/obj_name_or_id' where
+           ws_name_or_id is the workspace name or id and obj_name_or_id is
+           the object name or id string   source_dir             -  
+           directory with the files to be uploaded string  
+           assembly_or_genome_ref -   workspace object ref of assembly or
+           genome annotation that was used to build the alignment string  
+           annotation_ref         -   annotation ref mapping 
+           mapped_alignment       -   mapping of read_lib_ref and
+           alignment_ref string   condition                    - string  
+           tool_used              -   stringtie or  cufflinks string  
+           tool_version           - *) -> structure: parameter
            "destination_ref" of String, parameter "source_dir" of String,
-           parameter "condition" of String, parameter
-           "assembly_or_genome_ref" of String, parameter "annotation_ref" of
-           String, parameter "mapped_rnaseq_alignment" of mapping from String
-           to String, parameter "data_quality_level" of Long, parameter
-           "original_median" of Double, parameter "tool_used" of String,
-           parameter "tool_version" of String, parameter "tool_opts" of
-           mapping from String to String, parameter "description" of String,
+           parameter "assembly_or_genome_ref" of String, parameter
+           "annotation_ref" of String, parameter "mapped_alignment" of
+           mapping from String to String, parameter "condition" of String,
+           parameter "tool_used" of String, parameter "tool_version" of
+           String, parameter "tool_opts" of mapping from String to String,
+           parameter "data_quality_level" of Long, parameter
+           "original_median" of Double, parameter "description" of String,
            parameter "platform" of String, parameter "source" of String,
            parameter "external_source_date" of String, parameter
            "processing_comments" of String
@@ -70,16 +71,14 @@ class ExpressionUtils(object):
 
     def download_expression(self, params, context=None):
         """
-        Downloadsexpression files TODO ???  *
+        Downloads expression *
         :param params: instance of type "DownloadExpressionParams" (*
            Required input parameters for downloading expression string
-           source_ref         -             object reference of expression
-           source. The object ref is 'ws_name_or_id/obj_name_or_id' where
+           source_ref         -       object reference of expression source.
+           The object ref is 'ws_name_or_id/obj_name_or_id' where
            ws_name_or_id is the workspace name or id and obj_name_or_id is
            the object name or id *) -> structure: parameter "source_ref" of
-           String, parameter "downloadCTAB" of type "boolean" (A boolean - 0
-           for false, 1 for true. @range (0, 1)), parameter "downloadTPM" of
-           type "boolean" (A boolean - 0 for false, 1 for true. @range (0, 1))
+           String
         :returns: instance of type "DownloadExpressionOutput" (*  The output
            of the download method.  *) -> structure: parameter "ws_id" of
            String, parameter "destination_dir" of String

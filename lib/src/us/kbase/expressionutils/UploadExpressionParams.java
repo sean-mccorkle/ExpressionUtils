@@ -15,16 +15,18 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * <p>Original spec-file type: UploadExpressionParams</p>
  * <pre>
  * *    Required input parameters for uploading a reads expression data
- *         string   destination_ref                -          object reference of expression data.
+ *         string   destination_ref        -   object reference of expression data.
  *                                             The object ref is 'ws_name_or_id/obj_name_or_id'
  *                                             where ws_name_or_id is the workspace name or id
  *                                             and obj_name_or_id is the object name or id
- *         string   source_dir                        -       Source: directory with the files to be uploaded
+ *         string   source_dir             -   directory with the files to be uploaded
+ *         string   assembly_or_genome_ref -   workspace object ref of assembly or genome
+ *                                             annotation that was used to build the alignment
+ *         string   annotation_ref         -   annotation ref
+ *         mapping  mapped_alignment       -   mapping of read_lib_ref and alignment_ref
  *         string   condition                    -
- *         string   assembly_or_genome_ref -          ?? workspace object ref of assembly or genome
- *         annotation that was used to build the alignment
- *             string annotation_id                    -        ?? is this the same as assembly ref ??
- *             mapping mapped_alignment            -        ?? is this alignment_ref?
+ *         string   tool_used              -   stringtie or  cufflinks
+ *         string   tool_version           -
  *     *
  * </pre>
  * 
@@ -34,15 +36,15 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonPropertyOrder({
     "destination_ref",
     "source_dir",
-    "condition",
     "assembly_or_genome_ref",
     "annotation_ref",
-    "mapped_rnaseq_alignment",
-    "data_quality_level",
-    "original_median",
+    "mapped_alignment",
+    "condition",
     "tool_used",
     "tool_version",
     "tool_opts",
+    "data_quality_level",
+    "original_median",
     "description",
     "platform",
     "source",
@@ -55,24 +57,24 @@ public class UploadExpressionParams {
     private java.lang.String destinationRef;
     @JsonProperty("source_dir")
     private java.lang.String sourceDir;
-    @JsonProperty("condition")
-    private java.lang.String condition;
     @JsonProperty("assembly_or_genome_ref")
     private java.lang.String assemblyOrGenomeRef;
     @JsonProperty("annotation_ref")
     private java.lang.String annotationRef;
-    @JsonProperty("mapped_rnaseq_alignment")
-    private Map<String, String> mappedRnaseqAlignment;
-    @JsonProperty("data_quality_level")
-    private Long dataQualityLevel;
-    @JsonProperty("original_median")
-    private Double originalMedian;
+    @JsonProperty("mapped_alignment")
+    private Map<String, String> mappedAlignment;
+    @JsonProperty("condition")
+    private java.lang.String condition;
     @JsonProperty("tool_used")
     private java.lang.String toolUsed;
     @JsonProperty("tool_version")
     private java.lang.String toolVersion;
     @JsonProperty("tool_opts")
     private Map<String, String> toolOpts;
+    @JsonProperty("data_quality_level")
+    private Long dataQualityLevel;
+    @JsonProperty("original_median")
+    private Double originalMedian;
     @JsonProperty("description")
     private java.lang.String description;
     @JsonProperty("platform")
@@ -115,21 +117,6 @@ public class UploadExpressionParams {
         return this;
     }
 
-    @JsonProperty("condition")
-    public java.lang.String getCondition() {
-        return condition;
-    }
-
-    @JsonProperty("condition")
-    public void setCondition(java.lang.String condition) {
-        this.condition = condition;
-    }
-
-    public UploadExpressionParams withCondition(java.lang.String condition) {
-        this.condition = condition;
-        return this;
-    }
-
     @JsonProperty("assembly_or_genome_ref")
     public java.lang.String getAssemblyOrGenomeRef() {
         return assemblyOrGenomeRef;
@@ -160,48 +147,33 @@ public class UploadExpressionParams {
         return this;
     }
 
-    @JsonProperty("mapped_rnaseq_alignment")
-    public Map<String, String> getMappedRnaseqAlignment() {
-        return mappedRnaseqAlignment;
+    @JsonProperty("mapped_alignment")
+    public Map<String, String> getMappedAlignment() {
+        return mappedAlignment;
     }
 
-    @JsonProperty("mapped_rnaseq_alignment")
-    public void setMappedRnaseqAlignment(Map<String, String> mappedRnaseqAlignment) {
-        this.mappedRnaseqAlignment = mappedRnaseqAlignment;
+    @JsonProperty("mapped_alignment")
+    public void setMappedAlignment(Map<String, String> mappedAlignment) {
+        this.mappedAlignment = mappedAlignment;
     }
 
-    public UploadExpressionParams withMappedRnaseqAlignment(Map<String, String> mappedRnaseqAlignment) {
-        this.mappedRnaseqAlignment = mappedRnaseqAlignment;
+    public UploadExpressionParams withMappedAlignment(Map<String, String> mappedAlignment) {
+        this.mappedAlignment = mappedAlignment;
         return this;
     }
 
-    @JsonProperty("data_quality_level")
-    public Long getDataQualityLevel() {
-        return dataQualityLevel;
+    @JsonProperty("condition")
+    public java.lang.String getCondition() {
+        return condition;
     }
 
-    @JsonProperty("data_quality_level")
-    public void setDataQualityLevel(Long dataQualityLevel) {
-        this.dataQualityLevel = dataQualityLevel;
+    @JsonProperty("condition")
+    public void setCondition(java.lang.String condition) {
+        this.condition = condition;
     }
 
-    public UploadExpressionParams withDataQualityLevel(Long dataQualityLevel) {
-        this.dataQualityLevel = dataQualityLevel;
-        return this;
-    }
-
-    @JsonProperty("original_median")
-    public Double getOriginalMedian() {
-        return originalMedian;
-    }
-
-    @JsonProperty("original_median")
-    public void setOriginalMedian(Double originalMedian) {
-        this.originalMedian = originalMedian;
-    }
-
-    public UploadExpressionParams withOriginalMedian(Double originalMedian) {
-        this.originalMedian = originalMedian;
+    public UploadExpressionParams withCondition(java.lang.String condition) {
+        this.condition = condition;
         return this;
     }
 
@@ -247,6 +219,36 @@ public class UploadExpressionParams {
 
     public UploadExpressionParams withToolOpts(Map<String, String> toolOpts) {
         this.toolOpts = toolOpts;
+        return this;
+    }
+
+    @JsonProperty("data_quality_level")
+    public Long getDataQualityLevel() {
+        return dataQualityLevel;
+    }
+
+    @JsonProperty("data_quality_level")
+    public void setDataQualityLevel(Long dataQualityLevel) {
+        this.dataQualityLevel = dataQualityLevel;
+    }
+
+    public UploadExpressionParams withDataQualityLevel(Long dataQualityLevel) {
+        this.dataQualityLevel = dataQualityLevel;
+        return this;
+    }
+
+    @JsonProperty("original_median")
+    public Double getOriginalMedian() {
+        return originalMedian;
+    }
+
+    @JsonProperty("original_median")
+    public void setOriginalMedian(Double originalMedian) {
+        this.originalMedian = originalMedian;
+    }
+
+    public UploadExpressionParams withOriginalMedian(Double originalMedian) {
+        this.originalMedian = originalMedian;
         return this;
     }
 
@@ -337,7 +339,7 @@ public class UploadExpressionParams {
 
     @Override
     public java.lang.String toString() {
-        return ((((((((((((((((((((((((((((((((((("UploadExpressionParams"+" [destinationRef=")+ destinationRef)+", sourceDir=")+ sourceDir)+", condition=")+ condition)+", assemblyOrGenomeRef=")+ assemblyOrGenomeRef)+", annotationRef=")+ annotationRef)+", mappedRnaseqAlignment=")+ mappedRnaseqAlignment)+", dataQualityLevel=")+ dataQualityLevel)+", originalMedian=")+ originalMedian)+", toolUsed=")+ toolUsed)+", toolVersion=")+ toolVersion)+", toolOpts=")+ toolOpts)+", description=")+ description)+", platform=")+ platform)+", source=")+ source)+", externalSourceDate=")+ externalSourceDate)+", processingComments=")+ processingComments)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((((((((((((("UploadExpressionParams"+" [destinationRef=")+ destinationRef)+", sourceDir=")+ sourceDir)+", assemblyOrGenomeRef=")+ assemblyOrGenomeRef)+", annotationRef=")+ annotationRef)+", mappedAlignment=")+ mappedAlignment)+", condition=")+ condition)+", toolUsed=")+ toolUsed)+", toolVersion=")+ toolVersion)+", toolOpts=")+ toolOpts)+", dataQualityLevel=")+ dataQualityLevel)+", originalMedian=")+ originalMedian)+", description=")+ description)+", platform=")+ platform)+", source=")+ source)+", externalSourceDate=")+ externalSourceDate)+", processingComments=")+ processingComments)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }
