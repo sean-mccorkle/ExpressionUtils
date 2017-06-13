@@ -7,9 +7,12 @@ A KBase module: ExpressionUtils
 
     This module is intended for use by Assemblers to upload RNASeq Expression files
     (gtf, fpkm and ctab). The expression files are uploaded as a single compressed file.
+
+    This module generates the ctab files and tpm data that are absent in the output of cufflinks.
     This module also generates expression levels and tpm expression levels from the uploaded
-    files and saves them in the workspace object. Once uploaded, the expression files can be
-    downloaded in the specified directory.
+    files and saves them in the workspace object. (todo)
+
+    Once uploaded, the expression files can be downloaded onto an output directory.
     **/
 
 module ExpressionUtils {
@@ -26,7 +29,7 @@ module ExpressionUtils {
                                             The object ref is 'ws_name_or_id/obj_name_or_id'
                                             where ws_name_or_id is the workspace name or id
                                             and obj_name_or_id is the object name or id
-
+                                            
         string   source_dir             -   directory with the files to be uploaded
         string   assembly_or_genome_ref -   workspace object ref of assembly or genome
                                             annotation that was used to build the alignment
@@ -90,7 +93,7 @@ module ExpressionUtils {
     /**  The output of the download method.  **/
 
     typedef structure {
-        string    ws_id;                /* source */
+        string    ws_id;                /* workspace id */
         string    destination_dir;      /* directory containing all the downloaded files  */
     } DownloadExpressionOutput;
 

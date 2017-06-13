@@ -138,7 +138,6 @@ class ExpressionUtilsTest(unittest.TestCase):
         """
         Use HTTP multi-part POST to save a file to a SHOCK instance.
         """
-
         header = dict()
         header["Authorization"] = "Oauth {0}".format(cls.token)
 
@@ -472,7 +471,7 @@ class ExpressionUtilsTest(unittest.TestCase):
         opt_params = {}
         self.export_expression_success('test_upload_expression', opt_params)
                             
-    '''
+
     def fail_upload_expression(self, params, error, exception=ValueError, do_startswith=False):
 
         test_name = inspect.stack()[1][3]
@@ -488,85 +487,63 @@ class ExpressionUtilsTest(unittest.TestCase):
         else:
             self.assertEqual(error, str(context.exception.message))
 
-    def test_upload_fail_empty_reads(self):
-
-        params = dictmerge({
-                'destination_ref': self.getWsName() + '/test_download_sam',
-                'file_path': self.test_sam_file['file_path']
-            }, self.more_upload_params)
-
-        params['read_library_ref'] = self.getWsName() + '/empty'
-
-        self.fail_upload_expression(params, 'Invalid type for object ' +
-                       self.staged['empty']['ref'] + ' (empty). Only the ' +
-                        'types KBaseFile.SingleEndLibrary KBaseAssembly.PairedEndLibrary ' +
-                        'KBaseAssembly.SingleEndLibrary and KBaseFile.PairedEndLibrary ' +
-                        'are supported')
-
-
     def test_upload_fail_no_dst_ref(self):
         self.fail_upload_expression(
             dictmerge({
                         'condition': 'bar',
-                        'file_path': 'test'
+                        'source_dir': 'test'
                        }, self.more_upload_params),
             'destination_ref parameter is required')
-
 
     def test_upload_fail_no_ws_name(self):
         self.fail_upload_expression(
             dictmerge({
                          'condition': 'bar',
                          'destination_ref': '/foo',
-                         'file_path': 'test'
+                         'source_dir': 'test'
                        }, self.more_upload_params),
             'Workspace name or id is required in destination_ref')
-
 
     def test_upload_fail_no_obj_name(self):
         self.fail_upload_expression(
             dictmerge({
                          'condition': 'bar',
                          'destination_ref': self.getWsName() + '/',
-                         'file_path': 'test'
+                         'source_dir': 'test'
                        }, self.more_upload_params),
             'Object name or id is required in destination_ref')
-
 
     def test_upload_fail_no_file(self):
         self.fail_upload_expression(
             dictmerge({
                          'destination_ref': self.getWsName()+'/foo'
                        }, self.more_upload_params),
-            'file_path parameter is required')
-
+            'source_dir parameter is required')
 
     def test_upload_fail_non_existant_file(self):
         self.fail_upload_expression(
             dictmerge({
                 'destination_ref': self.getWsName()+'/foo',
-                'file_path': 'foo'
+                'source_dir': 'foo'
             }, self.more_upload_params),
-            'File does not exist: foo')
-
+            'Source directory does not exist: foo')
 
     def test_upload_fail_bad_wsname(self):
         self.fail_upload_expression(
             dictmerge({
                         'destination_ref': '&bad' + '/foo',
-                        'file_path': 'foo'
+                        'source_dir': 'foo'
                           }, self.more_upload_params),
             'Illegal character in workspace name &bad: &')
-
 
     def test_upload_fail_non_existant_wsname(self):
         self.fail_upload_expression(
             dictmerge({
                         'destination_ref': '1s' + '/foo',
-                        'file_path': 'bar'
+                        'source_dir': 'bar'
                       }, self.more_upload_params),
             'No workspace with name 1s exists')
-    '''
+
 
     # TO DO:  add more tests
 
