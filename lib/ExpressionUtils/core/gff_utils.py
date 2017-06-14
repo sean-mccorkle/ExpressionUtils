@@ -1,7 +1,10 @@
 import os
 import logging
+import contig_id_mapping as c_mapping
 from script_utils import runProgram, log
-
+import traceback
+from AssemblyUtil.AssemblyUtilClient import AssemblyUtil
+from GenomeFileUtil.GenomeFileUtilClient import GenomeFileUtil
 
 class GFFUtils:
     """
@@ -67,3 +70,65 @@ class GFFUtils:
             return 1
 
         return 0
+
+    def create_gtf_annotation_from_genome(logger, ws_client, hs_client, urls, ws_id, genome_ref,
+                                          genome_name, directory, token):
+        ref = ws_client.get_object_subset(
+            [{'ref': genome_ref, 'included': ['contigset_ref', 'assembly_ref']}])
+        if 'contigset_ref' in ref[0]['data']:
+            contig_id = ref[0]['data']['contigset_ref']
+        elif 'assembly_ref' in ref[0]['data']:
+            contig_id = ref[0]['data']['assembly_ref']
+        if contig_id is None:
+            raise ValueError(
+                "Genome {0} object does not have reference to the assembly object".format(
+                    genome_name))
+        print contig_id
+        logger.info("Generating GFF file from Genome")
+        try:
+            assembly = AssemblyUtil(urls['callback_url'])
+            ret = assembly.get_assembly_as_fasta({'ref': contig_id})
+            output_file = ret['path']
+            mapping_filename = c_mapping.create_sanitized_contig_ids(output_file)
+            os.remove(output_file)
+            ## get the GFF
+            genome = GenomeFileUtil(urls['callback_url'])
+            ret = genome.genome_to_gff({'genome_ref': genome_ref})
+            file_path = ret['file_path']
+            c_mapping.replace_gff_contig_ids(file_path, mapping_filename, to_modified=True)
+            gtf_ext = ".gtf"
+            if not file_path.endswith(gtf_ext):
+                gtf_path = os.path.join(directory, genome_name + ".gtf")
+                gtf_cmd = " -E {0} -T -o {1}".format(file_path, gtf_path)
+                try:
+                    logger.info("Executing: gffread {0}".format(gtf_cmd))
+                    cmdline_output = runProgram(None, "gffread", gtf_cmd, None,
+                                                            directory)
+                except Exception as e:
+                    raise Exception(
+                        "Error Converting the GFF file to GTF using gffread {0},{1}".format(gtf_cmd,
+                                                                                            "".join(
+                                                                                                traceback.format_exc())))
+            else:
+                logger.info("GTF handled by GAU")
+                gtf_path = file_path
+            logger.info("gtf file : " + gtf_path)
+            if os.path.exists(gtf_path):
+                annotation_handle = hs_client.upload(gtf_path)
+                a_handle = {"handle": annotation_handle, "size": os.path.getsize(gtf_path),
+                            'genome_id': genome_ref}
+            ##Saving GFF/GTF annotation to the workspace
+            res = ws_client.save_objects(
+                {"workspace": ws_id,
+                 "objects": [{
+                     "type": "KBaseRNASeq.GFFAnnotation",
+                     "data": a_handle,
+                     "name": genome_name + "_GTF_Annotation",
+                     "hidden": 1}
+                 ]})
+        except Exception as e:
+            raise ValueError(
+                "Generating GTF file from Genome Annotation object Failed :  {}".format(
+                    "".join(traceback.format_exc())))
+        return gtf_path
+
