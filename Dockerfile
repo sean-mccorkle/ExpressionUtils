@@ -30,7 +30,16 @@ RUN echo Installing tablemaker \
     && tar zxvf ${TM_VER}.tar.gz \
     && rm -f ${TM_VER}.tar.gz
 
-ENV PATH $PATH:/opt/tablemaker-2.1.1.Linux_x86_64
+
+# Install gffread
+RUN  echo Installing gffread \
+  && cd /opt \
+  && git clone https://github.com/gpertea/gclib \
+  && git clone https://github.com/gpertea/gffread \
+  && cd gffread \
+  && make
+
+ENV PATH $PATH:/opt/tablemaker-2.1.1.Linux_x86_64:/opt/gffread
 
 # -----------------------------------------
 

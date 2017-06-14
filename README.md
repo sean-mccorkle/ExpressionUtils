@@ -8,3 +8,7 @@ A module to upload, download and export RNASeq Expression data obtained by eithe
 
 
 
+TODO:
+- ReadsAlignmentUtils and this kbase module both use a set of utility functions in a python module
+called script_utils. This module should be placed in a separate github respository and then imported
+into these and other kbase modules that require the utility functions.
