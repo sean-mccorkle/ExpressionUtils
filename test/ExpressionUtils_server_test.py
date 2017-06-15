@@ -5,9 +5,9 @@ import time
 import shutil
 import hashlib
 import inspect
-import tarfile
 import requests
 import tempfile
+from zipfile import ZipFile
 from datetime import datetime
 from distutils.dir_util import copy_tree
 
@@ -235,9 +235,12 @@ class ExpressionUtilsTest(unittest.TestCase):
         fasta_path = os.path.join(cls.scratch, file_name)
         shutil.copy(os.path.join('data', file_name), fasta_path)
         assembly_ref = cls.assemblyUtil.save_assembly_from_fasta({'file': {'path': fasta_path},
-                                                                  'workspace_name': cls.getWsName(),
-                                                                  'assembly_name': wsobj_name
-                                                                  })
+                                               'workspace_name': cls.getWsName(),
+                                               'assembly_name': wsobj_name
+                                               })
+
+        objinfo = cls.wsClient.get_object_info_new({'objects': [{'ref': assembly_ref}]})[0]
+
         cls.staged[wsobj_name] = {'info': None,
                                   'ref': assembly_ref}
 
@@ -245,12 +248,12 @@ class ExpressionUtilsTest(unittest.TestCase):
     def upload_alignment(cls, wsobjname, file_name):
         align_path = os.path.join(cls.scratch, file_name)
         shutil.copy(os.path.join('data', file_name), align_path)
-        align_info = cls.rau.upload_alignment(
-                               {'file_path': align_path,
-                                'destination_ref': cls.getWsName() + '/' + wsobjname,
-                                'read_library_ref': cls.getWsName() + '/test_reads',
-                                'assembly_or_genome_ref': cls.getWsName() + '/test_assembly',
-                                'condition': 'test_condition'})
+        align_info = cls.rau.upload_alignment({'file_path': align_path,
+                                               'destination_ref': cls.getWsName() + '/' + wsobjname,
+                                               'read_library_ref': cls.getWsName() + '/test_reads',
+                                               'assembly_or_genome_ref': cls.getWsName() + '/test_genome',
+                                               'condition': 'test_condition'
+                                               })
         cls.staged[wsobjname] = {'info': align_info,
                                  'ref': align_info['obj_ref']}
 
@@ -294,16 +297,13 @@ class ExpressionUtilsTest(unittest.TestCase):
             'type': 'shock',
             'remote_md5': md5
         }
-
         obj = {
-            "size": size,
-            "handle": a_handle,
-            "genome_id": "test_genome_GTF_Annotation",
-            "genome_scientific_name": "scientific name"
-        }
-
+                "size": size,
+                "handle": a_handle,
+                "genome_id": "test_genome_GTF_Annotation",
+                "genome_scientific_name": "scientific name"
+              }
         res = cls.save_ws_obj(obj, wsobjname, "KBaseRNASeq.GFFAnnotation")
-
         return cls.make_ref(res)
 
     @classmethod
@@ -314,14 +314,14 @@ class ExpressionUtilsTest(unittest.TestCase):
         timestamp = int((datetime.utcnow() - datetime.utcfromtimestamp(0)).total_seconds() * 1000)
         cls.upload_dir = 'upload_' + str(timestamp)
         cls.upload_dir_path = os.path.join(cls.scratch, cls.upload_dir)
-        cls.uploaded_tar = cls.upload_dir + '.tar.gz'
+        cls.uploaded_zip = cls.upload_dir + '.zip'
 
         copy_tree('data/hy5_rep1_stringtie', cls.upload_dir_path)
 
         # uploads reads, genome and assembly to be used as input parameters to upload_expression
 
-        annotation_ref = cls.upload_annotation('test_annotation', 'hy5_rep1.stringtie_out.gtf')
         cls.upload_genome('test_genome', 'minimal.gbff')
+        annotation_ref = cls.upload_annotation('test_annotation', 'hy5_rep1.stringtie_out.gtf')
 
         int_reads = {'file': 'data/interleaved.fq',
                      'name': '',
@@ -333,16 +333,11 @@ class ExpressionUtilsTest(unittest.TestCase):
         cls.upload_alignment('test_alignment', 'accepted_hits_sorted.bam')
 
         cls.more_upload_params = {
-            'type': 'RNA-Seq',
-            'tool_used': 'stringtie',
-            'tool_version': 'stringtie_version',
-            'numerical_interpretation': 'FPKM',
-            'assembly_or_genome_ref': cls.getWsName() + '/test_genome',
-            'annotation_ref': annotation_ref,
-            'condition': 'test_condition',
-            'mapped_alignment': {cls.getWsName() + '/test_reads':
-                                 cls.getWsName() + '/test_alignment'}
-        }
+                                  'tool_used': 'stringtie',
+                                  'tool_version': 'stringtie_version',
+                                  'annotation_ref': annotation_ref,
+                                  'alignment_ref': cls.getWsName() + '/test_alignment'
+                                 }
 
     @classmethod
     def getSize(cls, filename):
@@ -372,15 +367,15 @@ class ExpressionUtilsTest(unittest.TestCase):
         print("==============================================")
 
         self.assertEqual(ref['obj_ref'], self.make_ref(obj['info']))
-        self.assertEqual(obj['info'][2].startswith(
-            'KBaseRNASeq.RNASeqExpression'), True)
+        self.assertEqual(obj['info'][2].startswith('KBaseRNASeq.RNASeqExpression'), True)
         d = obj['data']
-        self.assertEqual(d['genome_id'], params.get('assembly_or_genome_ref'))
-        self.assertEqual(d['condition'], params.get('condition'))
-
+        self.assertEqual(d['genome_id'], self.getWsName() + '/test_genome')
+        self.assertEqual(d['condition'], 'test_condition')
+        self.assertEqual(d['mapped_rnaseq_alignment'].keys()[0],
+                         self.getWsName() + '/test_reads')
         f = d['file']
-        self.assertEqual(f['file_name'], self.uploaded_tar)
-        self.assertEqual(f['remote_md5'], self.md5(os.path.join(self.scratch, self.uploaded_tar)))
+        self.assertEqual(f['file_name'], self.uploaded_zip)
+        self.assertEqual(f['remote_md5'], self.md5(os.path.join(self.scratch, self.uploaded_zip)))
 
         self.handles_to_delete.append(f['id'])
 
@@ -431,11 +426,11 @@ class ExpressionUtilsTest(unittest.TestCase):
         headers = {'Authorization': 'OAuth ' + self.token}
         r = requests.get(node_url, headers=headers, allow_redirects=True)
         fn = r.json()['data']['file']['name']
-        self.assertEquals(fn, self.uploaded_tar)
+        self.assertEquals(fn, self.uploaded_zip)
         temp_dir = tempfile.mkdtemp(dir=self.scratch)
         export_dir = self.upload_dir.replace('upload', 'export')
         export_dir_path = os.path.join(temp_dir, export_dir)
-        export_file_path = export_dir_path + '.tar.gz'
+        export_file_path = export_dir_path + '.zip'
         print('export file path: ' + export_file_path)
         print('downloading shocknode ' + shocknode)
         with open(export_file_path, 'wb') as fhandle:
@@ -445,9 +440,8 @@ class ExpressionUtilsTest(unittest.TestCase):
                 if not chunk:
                     break
                 fhandle.write(chunk)
-        tar = tarfile.open(export_file_path)
-        tar.extractall(path=export_dir_path)
-        tar.close()
+        with ZipFile(export_file_path) as z:
+            z.extractall(export_dir_path)
 
         self.check_files(export_dir_path, self.upload_dir_path)
 
@@ -474,58 +468,58 @@ class ExpressionUtilsTest(unittest.TestCase):
     def test_upload_fail_no_dst_ref(self):
         self.fail_upload_expression(
             dictmerge({
-                'condition': 'bar',
-                'source_dir': 'test'
-            }, self.more_upload_params),
+                        'condition': 'bar',
+                        'source_dir': 'test'
+                       }, self.more_upload_params),
             'destination_ref parameter is required')
 
     def test_upload_fail_no_ws_name(self):
         self.fail_upload_expression(
             dictmerge({
-                'condition': 'bar',
-                'destination_ref': '/foo',
-                'source_dir': 'test'
-            }, self.more_upload_params),
+                         'condition': 'bar',
+                         'destination_ref': '/foo',
+                         'source_dir': 'test'
+                       }, self.more_upload_params),
             'Workspace name or id is required in destination_ref')
 
     def test_upload_fail_no_obj_name(self):
         self.fail_upload_expression(
             dictmerge({
-                'condition': 'bar',
-                'destination_ref': self.getWsName() + '/',
-                'source_dir': 'test'
-            }, self.more_upload_params),
+                         'condition': 'bar',
+                         'destination_ref': self.getWsName() + '/',
+                         'source_dir': 'test'
+                       }, self.more_upload_params),
             'Object name or id is required in destination_ref')
 
     def test_upload_fail_no_file(self):
         self.fail_upload_expression(
             dictmerge({
-                'destination_ref': self.getWsName() + '/foo'
-            }, self.more_upload_params),
+                         'destination_ref': self.getWsName()+'/foo'
+                       }, self.more_upload_params),
             'source_dir parameter is required')
 
     def test_upload_fail_non_existant_file(self):
         self.fail_upload_expression(
             dictmerge({
-                'destination_ref': self.getWsName() + '/foo',
-                'source_dir': 'foo'
-            }, self.more_upload_params),
+                        'destination_ref': self.getWsName()+'/foo',
+                        'source_dir': 'foo'
+                      }, self.more_upload_params),
             'Source directory does not exist: foo')
 
     def test_upload_fail_bad_wsname(self):
         self.fail_upload_expression(
             dictmerge({
-                'destination_ref': '&bad' + '/foo',
-                'source_dir': 'foo'
-            }, self.more_upload_params),
+                        'destination_ref': '&bad' + '/foo',
+                        'source_dir': 'foo'
+                          }, self.more_upload_params),
             'Illegal character in workspace name &bad: &')
 
     def test_upload_fail_non_existant_wsname(self):
         self.fail_upload_expression(
             dictmerge({
-                'destination_ref': '1s' + '/foo',
-                'source_dir': 'bar'
-            }, self.more_upload_params),
+                        'destination_ref': '1s' + '/foo',
+                        'source_dir': 'bar'
+                      }, self.more_upload_params),
             'No workspace with name 1s exists')
 
     # TO DO:  add more tests

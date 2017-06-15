@@ -13,6 +13,10 @@ from DataFileUtil.DataFileUtilClient import DataFileUtil
 from DataFileUtil.baseclient import ServerError as DFUError
 from Workspace.WorkspaceClient import Workspace
 from Workspace.baseclient import ServerError as WorkspaceError
+from ReadsAlignmentUtils.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
+from core.expression_utils import ExpressionUtils as Expression_Utils
+from core.gff_utils import GFFUtils
+from core.table_maker import TableMaker
 
 #END_HEADER
 
@@ -47,13 +51,12 @@ downloaded in the specified directory.
     PARAM_IN_SRC_DIR = 'source_dir'
     PARAM_IN_SRC_REF = 'source_ref'
     PARAM_IN_DST_REF = 'destination_ref'
-    PARAM_IN_CONDITION = 'condition'
-    PARAM_IN_ASM_GEN_REF = 'assembly_or_genome_ref'
-    PARAM_IN_MAPPED_ALIGNMENT = 'mapped_alignment'
-    PARAM_IN_ANNOTATION_REF = 'annotation_ref'
+    PARAM_IN_ALIGNMENT_REF = 'alignment_ref'
     PARAM_IN_TOOL_USED = 'tool_used'
     PARAM_IN_TOOL_VER = 'tool_version'
 
+    PARAM_IN_ANNOTATION_REF = 'annotation_ref'
+    PARAM_IN_BAM_FILE_PATH = 'bam_file_path'
     PARAM_IN_TOOL_OPTS = 'tool_opts'
     PARAM_IN_DESCRIPTION = 'description'
     PARAM_IN_DATA_QUAL_LEVEL = 'data_quality_level'
@@ -63,6 +66,8 @@ downloaded in the specified directory.
     PARAM_IN_ORIG_MEDIAN = 'original_median'
     PARAM_IN_EXT_SRC_DATE = 'external_source_date'
     PARAM_IN_SRC = 'source'
+
+    PARAM_IN_READ_LIB_REF = 'read_lib_ref'
 
     def log(self, message, prefix_newline=False):
         print(('\n' if prefix_newline else '') +
@@ -112,10 +117,7 @@ downloaded in the specified directory.
         """
         self._check_required_param(params, [self.PARAM_IN_DST_REF,
                                             self.PARAM_IN_SRC_DIR,
-                                            self.PARAM_IN_CONDITION,
-                                            self.PARAM_IN_ASM_GEN_REF,
-                                            self.PARAM_IN_ANNOTATION_REF,
-                                            self.PARAM_IN_MAPPED_ALIGNMENT,
+                                            self.PARAM_IN_ALIGNMENT_REF,
                                             self.PARAM_IN_TOOL_USED,
                                             self.PARAM_IN_TOOL_VER,
                                             ])
@@ -145,6 +147,58 @@ downloaded in the specified directory.
         return info
 
 
+    def _get_annotation(self, params, input_ref, workspace):
+
+        if self.PARAM_IN_ANNOTATION_REF in params and params[self.PARAM_IN_ANNOTATION_REF] is not None:
+            return params[self.PARAM_IN_ANNOTATION_REF]
+
+        obj_type = self._get_ws_info(input_ref)[2]
+        if (obj_type.startswith('KBaseGenomes.Genome')):
+            annotation_ref = self.gff_utils.create_gff_annotation_from_genome(
+                                    input_ref, workspace)
+        elif obj_type.startswith('KBaseGenomeAnnotations.Assembly') or \
+                obj_type.startswith('KBaseGenomes.ContigSet'):
+            raise ValueError((self.PARAM_IN_ANNOTATION_REF + ' parameter is required'))
+        else:
+            raise ValueError('Parameter type should be assembly or genome ref and not ' + obj_type)
+        return annotation_ref
+
+
+    def _get_expression_levels(self, source_dir):
+
+        fpkm_file = None
+        for infile in os.listdir(source_dir):
+            if 'fpkm' in infile.lower() or 'tracking' in infile.lower():
+                fpkm_file = infile
+                break
+
+        if fpkm_file is None:
+            raise ValueError('FPKM tracking file is required in ' + source_dir)
+
+        return self.expression_utils.get_expression_levels(os.path.join(source_dir, fpkm_file))
+
+
+    def _gen_ctab_files(self, source_dir, alignment_ref, token):
+
+        if len(glob.glob(source_dir + '/*.ctab')) < 5:
+
+            print('=======  Generating ctab files ==========')
+            gtf_file = glob.glob(source_dir + '/*.gtf')
+            if len(gtf_file) > 1:
+                raise ValueError("Expected only one .gtf file in " + source_dir)
+
+            if self.PARAM_IN_BAM_FILE_PATH in params and params[self.PARAM_IN_BAM_FILE_PATH] is not None:
+                bam_file_path = params[self.PARAM_IN_BAM_FILE_PATH]
+            else:
+                print('Downloading bam file from alignment object')
+                rau = ReadsAlignmentUtils(self.callback_url, token, service_ver='dev')
+                bam_file_path = rau.download_alignment({'source_ref': alignment_ref})['bam_file']
+            result = self.table_maker.build_ctab_files(
+                ref_genome_path=gtf_file[0],
+                alignment_path=bam_file_path,
+                output_dir=source_dir)
+
+
     #END_CLASS_HEADER
 
     # config contains contents of config file in a hash or None if it couldn't
@@ -155,6 +209,9 @@ downloaded in the specified directory.
         self.scratch = config['scratch']
         self.callback_url = os.environ['SDK_CALLBACK_URL']
         self.ws_url = config['workspace-url']
+        self.expression_utils = Expression_Utils(config)
+        self.gff_utils = GFFUtils(config)
+        self.table_maker = TableMaker(config)
         #END_CONSTRUCTOR
         pass
 
@@ -202,39 +259,53 @@ downloaded in the specified directory.
 
         dfu = DataFileUtil(self.callback_url, token=ctx['token'])
 
+        objinfo = self._get_ws_info(params.get(self.PARAM_IN_ALIGNMENT_REF))
+
+        alignment_ref = str(objinfo[6]) + '/' + str(objinfo[0])
+
+        try:
+            alignment_obj = dfu.get_objects({'object_refs': [alignment_ref]})['data'][0]
+        except DFUError as e:
+            self.log('Logging stacktrace from workspace exception:\n' + e.data)
+            raise
+
+        alignment = alignment_obj['data']
+        assembly_or_genome_ref = alignment['genome_id']
+        annotation_ref = self._get_annotation(params, assembly_or_genome_ref, ws_name_id)
+
+        expression_levels, tpm_expression_levels = self._get_expression_levels(source_dir)
+
+        self._gen_ctab_files(source_dir, alignment_ref, ctx['token'])
+
         uploaded_file = dfu.file_to_shock({'file_path': source_dir,
                                            'make_handle': 1,
-                                           'pack': 'targz'
+                                           'pack': 'zip'
                                           })
-
         """
-        move the tarfile created in the source directory one level up
+        move the zipfile created in the source directory one level up
         """
         path, dir = os.path.split(source_dir)
-        tarfile = dir + '.tar.gz'
-        if os.path.isfile(os.path.join(source_dir, tarfile)):
-            shutil.move(os.path.join(source_dir, tarfile), os.path.join(path, tarfile))
+        zipfile = dir + '.zip'
+        if os.path.isfile(os.path.join(source_dir, zipfile)):
+            shutil.move(os.path.join(source_dir, zipfile), os.path.join(path, zipfile))
 
         file_handle = uploaded_file['handle']
         file_size = uploaded_file['size']
 
-        expression_levels = {}
-        tpm_expression_levels = {}
-
         expression_data = {
                             'id': obj_name_id,
-                            'type': 'RNA-Seq',
+                            'type': 'RNA-KBaseRNASeq.RNASeqExpression',
                             'numerical_interpretation': 'FPKM',
-                            'genome_id': params.get(self.PARAM_IN_ASM_GEN_REF),
-                            'annotation_id': params.get(self.PARAM_IN_ANNOTATION_REF),
-                            'mapped_rnaseq_alignment': params.get(self.PARAM_IN_MAPPED_ALIGNMENT),
+                            'genome_id': assembly_or_genome_ref,
+                            'annotation_id': annotation_ref,
+                            'mapped_rnaseq_alignment': {alignment['read_sample_id']: alignment_ref},
+                            'condition': alignment['condition'],
                             'file': file_handle,
                             'expression_levels': expression_levels,
                             'tpm_expression_levels': tpm_expression_levels
-                           }
+                          }
 
         additional_params = [
-                            self.PARAM_IN_CONDITION,
                             self.PARAM_IN_TOOL_USED,
                             self.PARAM_IN_TOOL_VER,
                             self.PARAM_IN_TOOL_OPTS,
@@ -326,7 +397,7 @@ downloaded in the specified directory.
         if not os.listdir(output_dir):
             raise ValueError('No files were downloaded: ' + output_dir)
 
-        for f in glob.glob(output_dir + '/*.tar*'):
+        for f in glob.glob(output_dir + '/*.zip'):
             os.remove(f)
 
         returnVal = {'ws_id': info[6],
