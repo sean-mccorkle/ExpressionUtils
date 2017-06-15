@@ -1,10 +1,13 @@
 import os
 import logging
-import contig_id_mapping as c_mapping
+import uuid
 from script_utils import runProgram, log
-import traceback
-from AssemblyUtil.AssemblyUtilClient import AssemblyUtil
+import errno
 from GenomeFileUtil.GenomeFileUtilClient import GenomeFileUtil
+from DataFileUtil.DataFileUtilClient import DataFileUtil
+from Workspace.WorkspaceClient import Workspace as Workspace
+import shutil
+
 
 class GFFUtils:
     """
@@ -15,49 +18,44 @@ class GFFUtils:
     def __init__(self, config, logger=None):
         self.config = config
         self.logger = logger
+        self.callback_url = os.environ['SDK_CALLBACK_URL']
+        self.scratch = os.path.join(config['scratch'], str(uuid.uuid4()))
+        self.token = os.environ['KB_AUTH_TOKEN']
+        self.ws_url = config['workspace-url']
+        self._mkdir_p(self.scratch)
         pass
 
-    def _prepare_paths(self, ifile, ipath, ofile, opath, iext, oext):
+    def _mkdir_p(self, path):
         """
-        setup input and output file paths and extensions
+        _mkdir_p: make directory for given path
         """
-        if ipath is None:
-            ipath = ''
-        if opath is None:
-            opath = ipath
-        if ofile is None:
-            if ifile[-4:] == iext:
-                ofile = ifile[:-4] + oext
+        if not path:
+            return
+        try:
+            os.makedirs(path)
+        except OSError as exc:
+            if exc.errno == errno.EEXIST and os.path.isdir(path):
+                pass
             else:
-                ofile = ifile + oext
-        ifile = os.path.join(ipath, ifile)
-        ofile = os.path.join(opath, ofile)
+                raise
 
-        return ifile, ofile
-
-    def convert_gff_to_gtf(self, ifile, ipath=None, ofile=None, opath=None):
+    def convert_gff_to_gtf(self, gff_file_path, gtf_file_path):
         """
-        Runs gffread converts the specified GFF3 file to a GTF2 format
+        RConverts the specified GFF3 file to a GTF2 format
 
-        :param ifile: File path to a reference genome in GFF3 format
-        :param ipath: path to reference genome. If None, ipath is set to current path
-        :param ofile: GTF2 output filename. If None, ifile name is used with the
-        extension '.gff3' (if any) replaced with '.gtf'
-        :param opath: path to GTF2 output file. If None, ipath will be used
+        :param gff_file_path: File path to a reference genome in GFF3 format
+        :param gtf_file_path: path to GTF2 output file
 
         :returns 0 if successful, else 1
         """
         log('Running gffread...', level=logging.INFO, logger=self.logger)
 
-        # prepare input and output file paths
-        ifile, ofile = self._prepare_paths(ifile, ipath, ofile, opath, '.gff3', '.gtf')
-
         # check if input file exists
-        if not os.path.exists(ifile):
-            raise RuntimeError(None, 'Input gff file does not exist: ' + str(ifile))
+        if not os.path.exists(gff_file_path):
+            raise RuntimeError(None, 'Input gff file does not exist: ' + str(gff_file_path))
 
         try:
-            gtf_args = " {0} -T -o {1}".format(ifile, ofile)
+            gtf_args = " {0} -T -o {1}".format(gff_file_path, gtf_file_path)
             log("Executing: gffread {0}".format(gtf_args), level=logging.INFO, logger=self.logger)
             rval = runProgram(logger=self.logger, progName="gffread", argStr=gtf_args)
 
@@ -71,64 +69,81 @@ class GFFUtils:
 
         return 0
 
-    def create_gtf_annotation_from_genome(logger, ws_client, hs_client, urls, ws_id, genome_ref,
-                                          genome_name, directory, token):
-        ref = ws_client.get_object_subset(
-            [{'ref': genome_ref, 'included': ['contigset_ref', 'assembly_ref']}])
-        if 'contigset_ref' in ref[0]['data']:
-            contig_id = ref[0]['data']['contigset_ref']
-        elif 'assembly_ref' in ref[0]['data']:
-            contig_id = ref[0]['data']['assembly_ref']
-        if contig_id is None:
-            raise ValueError(
-                "Genome {0} object does not have reference to the assembly object".format(
-                    genome_name))
-        print contig_id
-        logger.info("Generating GFF file from Genome")
-        try:
-            assembly = AssemblyUtil(urls['callback_url'])
-            ret = assembly.get_assembly_as_fasta({'ref': contig_id})
-            output_file = ret['path']
-            mapping_filename = c_mapping.create_sanitized_contig_ids(output_file)
-            os.remove(output_file)
-            ## get the GFF
-            genome = GenomeFileUtil(urls['callback_url'])
-            ret = genome.genome_to_gff({'genome_ref': genome_ref})
-            file_path = ret['file_path']
-            c_mapping.replace_gff_contig_ids(file_path, mapping_filename, to_modified=True)
-            gtf_ext = ".gtf"
-            if not file_path.endswith(gtf_ext):
-                gtf_path = os.path.join(directory, genome_name + ".gtf")
-                gtf_cmd = " -E {0} -T -o {1}".format(file_path, gtf_path)
-                try:
-                    logger.info("Executing: gffread {0}".format(gtf_cmd))
-                    cmdline_output = runProgram(None, "gffread", gtf_cmd, None,
-                                                            directory)
-                except Exception as e:
-                    raise Exception(
-                        "Error Converting the GFF file to GTF using gffread {0},{1}".format(gtf_cmd,
-                                                                                            "".join(
-                                                                                                traceback.format_exc())))
-            else:
-                logger.info("GTF handled by GAU")
-                gtf_path = file_path
-            logger.info("gtf file : " + gtf_path)
-            if os.path.exists(gtf_path):
-                annotation_handle = hs_client.upload(gtf_path)
-                a_handle = {"handle": annotation_handle, "size": os.path.getsize(gtf_path),
-                            'genome_id': genome_ref}
-            ##Saving GFF/GTF annotation to the workspace
-            res = ws_client.save_objects(
-                {"workspace": ws_id,
-                 "objects": [{
-                     "type": "KBaseRNASeq.GFFAnnotation",
-                     "data": a_handle,
-                     "name": genome_name + "_GTF_Annotation",
-                     "hidden": 1}
-                 ]})
-        except Exception as e:
-            raise ValueError(
-                "Generating GTF file from Genome Annotation object Failed :  {}".format(
-                    "".join(traceback.format_exc())))
-        return gtf_path
+    def convert_genome_to_gff(self, genome_ref, target_dir):
+        """
+        Converts the specified kbase genome object to gff file format
 
+        :param genome_ref: workspace reference to kbase genome object
+        :param target_dir: directory to which to write the output gff file.
+        :return: path to the gff file. The gff file has the same name as the specified genome object
+        """
+        gfu = GenomeFileUtil(self.callback_url)
+        gff_file_path = gfu.genome_to_gff({'genome_ref': genome_ref,
+                                           'target_dir': target_dir})['file_path']
+
+        return gff_file_path
+
+    def convert_genome_to_gtf(self, genome_ref, gtf_file_path):
+        """
+        Converts the specified kbase genome object to gtf file format
+
+        :param genome_ref: workspace reference to kbase genome object
+        :param gtf_file_path:  path to the output gtf file
+        :return: 0 if successful, else 1.
+        """
+        gff_file_path = self.convert_genome_to_gff(genome_ref, self.scratch)
+        return self.convert_gff_to_gtf(gff_file_path, gtf_file_path)
+
+    def create_gff_annotation_ref(self, genome_ref, gtf_file_path, workspace_name):
+        """
+        Create a workspace reference of a kbase genome annotation object from the specified
+        kbase genome object and gtf file.
+
+        See https://ci.kbase.us/#spec/type/KBaseRNASeq.GFFAnnotation
+
+        :param genome_ref: workspace reference to kbase genome object
+        :param gtf_file_path:  path to the output gtf file
+        :return: Kbase genome annotation reference.
+        """
+        log('start saving GffAnnotation object')
+
+        dfu = DataFileUtil(self.callback_url)
+
+        if isinstance(workspace_name, int) or workspace_name.isdigit():
+            workspace_id = workspace_name
+        else:
+            workspace_id = dfu.ws_name_to_id(workspace_name)
+
+        ws = Workspace(self.ws_url, token=self.token)
+        genome_data = ws.get_objects2({'objects':
+                                       [{'ref': genome_ref}]})['data'][0]['data']
+        genome_name = genome_data.get('id')
+        genome_scientific_name = genome_data.get('scientific_name')
+        gff_annotation_name = genome_name + "_GTF_Annotation"
+
+        scratch_path = os.path.join(self.scratch + os.path.basename(gtf_file_path))
+        shutil.copy(gtf_file_path, scratch_path)
+        file_to_shock_result = dfu.file_to_shock({'file_path': scratch_path,
+                                                  'make_handle': True})
+        gff_annotation_data = {'handle': file_to_shock_result['handle'],
+                               'size': file_to_shock_result['size'],
+                               'genome_id': genome_ref,
+                               'genome_scientific_name': genome_scientific_name}
+
+        os.remove(scratch_path)
+
+        object_type = 'KBaseRNASeq.GFFAnnotation'
+
+        save_object_params = {
+            'id': workspace_id,
+            'objects': [{
+                'type': object_type,
+                'data': gff_annotation_data,
+                'name': gff_annotation_name
+            }]
+        }
+
+        dfu_oi = dfu.save_objects(save_object_params)[0]
+        gff_annotation_obj_ref = str(dfu_oi[6]) + '/' + str(dfu_oi[0]) + '/' + str(dfu_oi[4])
+
+        return gff_annotation_obj_ref

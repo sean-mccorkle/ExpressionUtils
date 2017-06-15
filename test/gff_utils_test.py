@@ -5,7 +5,6 @@ import sys
 import os  # noqa: F401
 import time
 import hashlib
-from ExpressionUtils.core import script_utils
 
 from os import environ
 try:
@@ -13,12 +12,14 @@ try:
 except BaseException:
     from configparser import ConfigParser  # py3
 
-from biokbase.workspace.client import Workspace as workspaceService
+from biokbase.workspace.client import Workspace as Workspace
 from ExpressionUtils.ExpressionUtilsImpl import ExpressionUtils
 from ExpressionUtils.ExpressionUtilsServer import MethodContext
 from ExpressionUtils.authclient import KBaseAuth as _KBaseAuth
 
 from ExpressionUtils.core.gff_utils import GFFUtils
+from GenomeFileUtil.GenomeFileUtilClient import GenomeFileUtil
+import shutil
 
 
 class GFFUtilsTest(unittest.TestCase):
@@ -43,8 +44,8 @@ class GFFUtilsTest(unittest.TestCase):
         for nameval in config.items('ExpressionUtils'):
             cls.cfg[nameval[0]] = nameval[1]
         # Getting username from Auth profile for token
-        authServiceUrl = cls.cfg['auth-service-url']
-        auth_client = _KBaseAuth(authServiceUrl)
+        auth_service_url = cls.cfg['auth-service-url']
+        auth_client = _KBaseAuth(auth_service_url)
         user_id = auth_client.get_user(token)
         # WARNING: don't call any logging methods on the context object,
         # it'll result in a NoneType error
@@ -58,26 +59,89 @@ class GFFUtilsTest(unittest.TestCase):
                              }],
                         'authenticated': 1})
         cls.wsURL = cls.cfg['workspace-url']
-        cls.wsClient = workspaceService(cls.wsURL)
         cls.serviceImpl = ExpressionUtils(cls.cfg)
         cls.scratch = cls.cfg['scratch']
         cls.callback_url = os.environ['SDK_CALLBACK_URL']
 
-    def test_convert_gff_to_gtf(self):
-        opath = '/kb/module/work/'
-        ofile = 'at_chrom1_section.gtf'
+        # create workspace that is local to the user if it does not exist
+        cls.ws = Workspace(url=cls.wsURL)
+        cls.ws_id = 'ExpressionUtils_test_' + user_id
 
-        if os.path.exists(opath + ofile):
-            os.remove(opath + ofile)
+        try:
+            ws_info = cls.ws.get_workspace_info({'workspace': cls.ws_id})
+            print("workspace already exists: " + str(ws_info))
+        except BaseException:
+            ws_info = cls.ws.create_workspace(
+                {'workspace': cls.ws_id, 'description': 'Workspace for ExpressionUtils_test'})
+            print("Created new workspace: " + str(ws_info))
+
+        print('using workspace_name: ' + cls.ws_id)
+
+        # data has to be copied to tmp dir so it can be seen by
+        # GenomeFileUtil subjob running in a separate docker container
+        INPUT_DATA_DIR = "/kb/module/test/data/gff_utils"
+        TMP_INPUT_DATA_DIR = "/kb/module/work/tmp"
+        input_file_name = 'at_chrom1_section.gbk'
+        input_data_path = os.path.join(INPUT_DATA_DIR, input_file_name)
+
+        tmp_input_data_path = os.path.join(TMP_INPUT_DATA_DIR, input_file_name)
+        shutil.copy(input_data_path, tmp_input_data_path)
+
+        genbankToGenomeParams = {"file": {"path": tmp_input_data_path},
+                                 "genome_name": "at_chrom1_section",
+                                 "workspace_name": cls.ws_id,
+                                 "source": "thale-cress",
+                                 "release": "1TAIR10",
+                                 "generate_ids_if_needed": True,
+                                 "type": "User upload"
+                                 }
+        gfu = GenomeFileUtil(os.environ['SDK_CALLBACK_URL'], token=token,
+                             auth_svc=auth_service_url)
+        cls.genome_upload_result = gfu.genbank_to_genome(genbankToGenomeParams)
+        print('genbank_to_genome save result: ' + str(cls.genome_upload_result))
+
+    def test_convert_gff_to_gtf(self):
+        gtf_file_path = '/kb/module/work/at_chrom1_section.gtf'
+
+        if os.path.exists(gtf_file_path):
+            os.remove(gtf_file_path)
 
         gff_utils = GFFUtils(self.__class__.cfg, self.__class__.__LOGGER)
 
-        result = gff_utils.convert_gff_to_gtf(ifile='at_chrom1_section.gff3',
-                                              ipath='data/gff_utils',
-                                              ofile=ofile,
-                                              opath=opath)
+        result = gff_utils.convert_gff_to_gtf(gff_file_path='data/gff_utils/at_chrom1_section.gff',
+                                              gtf_file_path=gtf_file_path)
 
         self.assertEquals(result, 0)
-        self.assertTrue(os.path.exists(opath + ofile))
-        self.assertEquals(hashlib.md5(open(opath + ofile, 'rb').read()).hexdigest(),
-                          '7fd7ba7896c9819bcabed53aa72a6de7')
+        self.assertTrue(gtf_file_path)
+        self.assertEquals(hashlib.md5(open(gtf_file_path, 'rb').read()).hexdigest(),
+                          '73288223c46c11ec23bf9602ac1ef72f')
+
+    def test_convert_genome_to_gff(self):
+        gff_utils = GFFUtils(self.__class__.cfg, self.__class__.__LOGGER)
+
+        gff_file_path = gff_utils.convert_genome_to_gff(
+            self.__class__.genome_upload_result['genome_ref'],
+            '/kb/module/work/tmp')
+
+        self.assertEquals("/kb/module/work/tmp/at_chrom1_section.gff", str(gff_file_path))
+        self.assertEquals(hashlib.md5(open(gff_file_path, 'rb').read()).hexdigest(),
+                          'b21026788423648b2a1e200af702ff44')
+
+    def test_convert_genome_to_gtf(self):
+        target_path = '/kb/module/work/tmp/at_chrom1_section_test.gtf'
+        gff_utils = GFFUtils(self.__class__.cfg, self.__class__.__LOGGER)
+        result = gff_utils.convert_genome_to_gtf(self.__class__.genome_upload_result['genome_ref'],
+                                                 target_path)
+        self.assertEquals(result, 0)
+        self.assertTrue(os.path.exists(target_path))
+        self.assertEquals(hashlib.md5(open(target_path, 'rb').read()).hexdigest(),
+                          '73288223c46c11ec23bf9602ac1ef72f')
+
+    def test_get_gff_annotation_ref(self):
+        gff_utils = GFFUtils(self.__class__.cfg, self.__class__.__LOGGER)
+        result = gff_utils.create_gff_annotation_ref(
+            self.__class__.genome_upload_result['genome_ref'],
+            '/kb/module/test/data/tablemaker/at_chrom1_section.gtf', self.__class__.ws_id)
+
+        obj = self.__class__.ws.get_objects([{'ref': result}])
+        self.assertEquals('KBaseRNASeq.GFFAnnotation-3.0', obj[0]['info'][2])

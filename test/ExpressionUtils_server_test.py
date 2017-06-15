@@ -14,7 +14,7 @@ from distutils.dir_util import copy_tree
 from os import environ
 try:
     from ConfigParser import ConfigParser  # py2
-except:
+except BaseException:
     from configparser import ConfigParser  # py3
 
 from pprint import pprint  # noqa: F401
@@ -95,7 +95,6 @@ class ExpressionUtilsTest(unittest.TestCase):
         cls.handles_to_delete = []
         cls.setupTestData()
 
-
     @classmethod
     def tearDownClass(cls):
         if hasattr(cls, 'wsName'):
@@ -107,7 +106,6 @@ class ExpressionUtilsTest(unittest.TestCase):
         if hasattr(cls, 'handles_to_delete'):
             cls.hs.delete_handles(cls.hs.ids_to_handles(cls.handles_to_delete))
             print('Deleted handles ' + str(cls.handles_to_delete))
-
 
     def getWsClient(self):
         return self.wsClient
@@ -162,13 +160,12 @@ class ExpressionUtilsTest(unittest.TestCase):
         else:
             return result["data"]
 
-
     @classmethod
     def upload_file_to_shock_and_get_handle(cls, test_file):
-        '''
+        """
         Uploads the file in test_file to shock and returns the node and a
         handle to the node.
-        '''
+        """
         print('loading file to shock: ' + test_file)
         node = cls.upload_file_to_shock(test_file)
         pprint(node)
@@ -183,7 +180,6 @@ class ExpressionUtilsTest(unittest.TestCase):
 
         md5 = node['file']['checksum']['md5']
         return node['id'], handle_id, md5, node['file']['size']
-
 
     @classmethod
     def upload_reads(cls, wsobjname, object_body, fwd_reads,
@@ -228,35 +224,33 @@ class ExpressionUtilsTest(unittest.TestCase):
         genbank_file_path = os.path.join(cls.scratch, file_name)
         shutil.copy(os.path.join('data', file_name), genbank_file_path)
         genome_obj = cls.gfu.genbank_to_genome({'file': {'path': genbank_file_path},
-                                         'workspace_name': cls.getWsName(),
-                                         'genome_name': wsobj_name
-                                         })
+                                                'workspace_name': cls.getWsName(),
+                                                'genome_name': wsobj_name
+                                                })
         cls.staged[wsobj_name] = {'info': genome_obj['genome_info'],
                                   'ref': genome_obj['genome_ref']}
-
 
     @classmethod
     def upload_assembly(cls, wsobj_name, file_name):
         fasta_path = os.path.join(cls.scratch, file_name)
         shutil.copy(os.path.join('data', file_name), fasta_path)
         assembly_ref = cls.assemblyUtil.save_assembly_from_fasta({'file': {'path': fasta_path},
-                                               'workspace_name': cls.getWsName(),
-                                               'assembly_name': wsobj_name
-                                               })
+                                                                  'workspace_name': cls.getWsName(),
+                                                                  'assembly_name': wsobj_name
+                                                                  })
         cls.staged[wsobj_name] = {'info': None,
                                   'ref': assembly_ref}
-
 
     @classmethod
     def upload_alignment(cls, wsobjname, file_name):
         align_path = os.path.join(cls.scratch, file_name)
         shutil.copy(os.path.join('data', file_name), align_path)
-        align_info = cls.rau.upload_alignment({'file_path': align_path,
-                                               'destination_ref': cls.getWsName() + '/' + wsobjname,
-                                               'read_library_ref': cls.getWsName() + '/test_reads',
-                                               'assembly_or_genome_ref': cls.getWsName() + '/test_assembly',
-                                               'condition': 'test_condition'
-                                               })
+        align_info = cls.rau.upload_alignment(
+                               {'file_path': align_path,
+                                'destination_ref': cls.getWsName() + '/' + wsobjname,
+                                'read_library_ref': cls.getWsName() + '/test_reads',
+                                'assembly_or_genome_ref': cls.getWsName() + '/test_assembly',
+                                'condition': 'test_condition'})
         cls.staged[wsobjname] = {'info': align_info,
                                  'ref': align_info['obj_ref']}
 
@@ -284,7 +278,6 @@ class ExpressionUtilsTest(unittest.TestCase):
                          }]
         })[0]
 
-
     @classmethod
     def upload_annotation(cls, wsobjname, file_name):
 
@@ -303,16 +296,15 @@ class ExpressionUtilsTest(unittest.TestCase):
         }
 
         obj = {
-                "size": size,
-                "handle": a_handle,
-                "genome_id": "test_genome_GTF_Annotation",
-                "genome_scientific_name": "scientific name"
-              }
+            "size": size,
+            "handle": a_handle,
+            "genome_id": "test_genome_GTF_Annotation",
+            "genome_scientific_name": "scientific name"
+        }
 
         res = cls.save_ws_obj(obj, wsobjname, "KBaseRNASeq.GFFAnnotation")
 
         return cls.make_ref(res)
-
 
     @classmethod
     def setupTestData(cls):
@@ -341,21 +333,20 @@ class ExpressionUtilsTest(unittest.TestCase):
         cls.upload_alignment('test_alignment', 'accepted_hits_sorted.bam')
 
         cls.more_upload_params = {
-                                  'type': 'RNA-Seq',
-                                  'tool_used': 'stringtie',
-                                  'tool_version': 'stringtie_version',
-                                  'numerical_interpretation': 'FPKM',
-                                  'assembly_or_genome_ref': cls.getWsName() + '/test_genome',
-                                  'annotation_ref': annotation_ref,
-                                  'condition': 'test_condition',
-                                  'mapped_alignment': {cls.getWsName() + '/test_reads':
-                                                       cls.getWsName() + '/test_alignment'}
-                                 }
+            'type': 'RNA-Seq',
+            'tool_used': 'stringtie',
+            'tool_version': 'stringtie_version',
+            'numerical_interpretation': 'FPKM',
+            'assembly_or_genome_ref': cls.getWsName() + '/test_genome',
+            'annotation_ref': annotation_ref,
+            'condition': 'test_condition',
+            'mapped_alignment': {cls.getWsName() + '/test_reads':
+                                 cls.getWsName() + '/test_alignment'}
+        }
 
     @classmethod
     def getSize(cls, filename):
         return os.path.getsize(filename)
-
 
     @classmethod
     def md5(cls, filename):
@@ -366,7 +357,6 @@ class ExpressionUtilsTest(unittest.TestCase):
                 hash_md5.update(buf)
                 buf = file_.read(65536)
             return hash_md5.hexdigest()
-
 
     # NOTE: According to Python unittest naming rules test method names should start from 'test'. # noqa
 
@@ -394,7 +384,6 @@ class ExpressionUtilsTest(unittest.TestCase):
 
         self.handles_to_delete.append(f['id'])
 
-
     def check_files(self, new_dir, orig_dir):
 
         self.assertEqual(len(os.listdir(new_dir)),
@@ -407,8 +396,7 @@ class ExpressionUtilsTest(unittest.TestCase):
             self.assertEqual(self.getSize(new_file_path), self.getSize(orig_file_path))
             self.assertEqual(self.md5(new_file_path), self.md5(orig_file_path))
 
-            print("Files checked: " + new_file_path + ', ' + orig_file_path )
-
+            print("Files checked: " + new_file_path + ', ' + orig_file_path)
 
     def download_expression_success(self, obj_name):
 
@@ -424,7 +412,6 @@ class ExpressionUtilsTest(unittest.TestCase):
 
         self.check_files(ret['destination_dir'], self.upload_dir_path)
 
-
     def test_an_upload_download_success(self):
 
         params = dictmerge({'destination_ref': self.getWsName() + '/test_upload_expression',
@@ -433,7 +420,6 @@ class ExpressionUtilsTest(unittest.TestCase):
         self.upload_expression_success(params)
 
         self.download_expression_success('test_upload_expression')
-
 
     def export_expression_success(self, obj_name, export_params):
 
@@ -465,12 +451,10 @@ class ExpressionUtilsTest(unittest.TestCase):
 
         self.check_files(export_dir_path, self.upload_dir_path)
 
-
     def test_success_export_expression(self):
 
         opt_params = {}
         self.export_expression_success('test_upload_expression', opt_params)
-                            
 
     def fail_upload_expression(self, params, error, exception=ValueError, do_startswith=False):
 
@@ -490,40 +474,40 @@ class ExpressionUtilsTest(unittest.TestCase):
     def test_upload_fail_no_dst_ref(self):
         self.fail_upload_expression(
             dictmerge({
-                        'condition': 'bar',
-                        'source_dir': 'test'
-                       }, self.more_upload_params),
+                'condition': 'bar',
+                'source_dir': 'test'
+            }, self.more_upload_params),
             'destination_ref parameter is required')
 
     def test_upload_fail_no_ws_name(self):
         self.fail_upload_expression(
             dictmerge({
-                         'condition': 'bar',
-                         'destination_ref': '/foo',
-                         'source_dir': 'test'
-                       }, self.more_upload_params),
+                'condition': 'bar',
+                'destination_ref': '/foo',
+                'source_dir': 'test'
+            }, self.more_upload_params),
             'Workspace name or id is required in destination_ref')
 
     def test_upload_fail_no_obj_name(self):
         self.fail_upload_expression(
             dictmerge({
-                         'condition': 'bar',
-                         'destination_ref': self.getWsName() + '/',
-                         'source_dir': 'test'
-                       }, self.more_upload_params),
+                'condition': 'bar',
+                'destination_ref': self.getWsName() + '/',
+                'source_dir': 'test'
+            }, self.more_upload_params),
             'Object name or id is required in destination_ref')
 
     def test_upload_fail_no_file(self):
         self.fail_upload_expression(
             dictmerge({
-                         'destination_ref': self.getWsName()+'/foo'
-                       }, self.more_upload_params),
+                'destination_ref': self.getWsName() + '/foo'
+            }, self.more_upload_params),
             'source_dir parameter is required')
 
     def test_upload_fail_non_existant_file(self):
         self.fail_upload_expression(
             dictmerge({
-                'destination_ref': self.getWsName()+'/foo',
+                'destination_ref': self.getWsName() + '/foo',
                 'source_dir': 'foo'
             }, self.more_upload_params),
             'Source directory does not exist: foo')
@@ -531,20 +515,17 @@ class ExpressionUtilsTest(unittest.TestCase):
     def test_upload_fail_bad_wsname(self):
         self.fail_upload_expression(
             dictmerge({
-                        'destination_ref': '&bad' + '/foo',
-                        'source_dir': 'foo'
-                          }, self.more_upload_params),
+                'destination_ref': '&bad' + '/foo',
+                'source_dir': 'foo'
+            }, self.more_upload_params),
             'Illegal character in workspace name &bad: &')
 
     def test_upload_fail_non_existant_wsname(self):
         self.fail_upload_expression(
             dictmerge({
-                        'destination_ref': '1s' + '/foo',
-                        'source_dir': 'bar'
-                      }, self.more_upload_params),
+                'destination_ref': '1s' + '/foo',
+                'source_dir': 'bar'
+            }, self.more_upload_params),
             'No workspace with name 1s exists')
 
-
     # TO DO:  add more tests
-
-
