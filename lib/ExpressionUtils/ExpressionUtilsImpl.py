@@ -178,8 +178,9 @@ downloaded in the specified directory.
         return self.expression_utils.get_expression_levels(os.path.join(source_dir, fpkm_file))
 
 
-    def _gen_ctab_files(self, source_dir, alignment_ref, token):
+    def _gen_ctab_files(self, params, alignment_ref, token):
 
+        source_dir = params.get(self.PARAM_IN_SRC_DIR)
         if len(glob.glob(source_dir + '/*.ctab')) < 5:
 
             print('=======  Generating ctab files ==========')
@@ -275,7 +276,7 @@ downloaded in the specified directory.
 
         expression_levels, tpm_expression_levels = self._get_expression_levels(source_dir)
 
-        self._gen_ctab_files(source_dir, alignment_ref, ctx['token'])
+        self._gen_ctab_files(params, alignment_ref, ctx['token'])
 
         uploaded_file = dfu.file_to_shock({'file_path': source_dir,
                                            'make_handle': 1,
