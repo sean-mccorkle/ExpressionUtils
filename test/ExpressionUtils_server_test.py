@@ -7,6 +7,7 @@ import hashlib
 import inspect
 import requests
 import tempfile
+import glob
 from zipfile import ZipFile
 from datetime import datetime
 from distutils.dir_util import copy_tree
@@ -85,8 +86,7 @@ class ExpressionUtilsTest(unittest.TestCase):
         cls.assemblyUtil = AssemblyUtil(cls.callbackURL)
         cls.gfu = GenomeFileUtil(cls.callbackURL)
         cls.gaAPI = GenomeAnnotationAPI(cls.service_wizard_url)
-        cls.rau = ReadsAlignmentUtils(cls.callbackURL)
-
+        cls.rau = ReadsAlignmentUtils(cls.callbackURL, service_ver='dev')
         cls.scratch = cls.cfg['scratch']
         cls.callback_url = os.environ['SDK_CALLBACK_URL']
 
@@ -114,8 +114,9 @@ class ExpressionUtilsTest(unittest.TestCase):
     def getWsName(cls):
         return cls.wsinfo[1]
 
-    def getImpl(self):
-        return self.serviceImpl
+    @classmethod
+    def getImpl(cls):
+        return cls.serviceImpl
 
     def getContext(self):
         return self.ctx
@@ -338,6 +339,10 @@ class ExpressionUtilsTest(unittest.TestCase):
                                   'annotation_ref': annotation_ref,
                                   'alignment_ref': cls.getWsName() + '/test_alignment'
                                  }
+        params = dictmerge({'destination_ref': cls.getWsName() + '/test_expression',
+                            'source_dir': cls.upload_dir_path,
+                            }, cls.more_upload_params)
+        cls.getImpl().upload_expression(cls.ctx, params)
 
     @classmethod
     def getSize(cls, filename):
@@ -357,8 +362,6 @@ class ExpressionUtilsTest(unittest.TestCase):
 
     def upload_expression_success(self, params):
 
-        ref = self.getImpl().upload_expression(self.ctx, params)[0]
-
         obj = self.dfu.get_objects(
             {'object_refs': [params.get('destination_ref')]})['data'][0]
 
@@ -366,7 +369,6 @@ class ExpressionUtilsTest(unittest.TestCase):
         pprint(obj)
         print("==============================================")
 
-        self.assertEqual(ref['obj_ref'], self.make_ref(obj['info']))
         self.assertEqual(obj['info'][2].startswith('KBaseRNASeq.RNASeqExpression'), True)
         d = obj['data']
         self.assertEqual(d['genome_id'], self.getWsName() + '/test_genome')
@@ -407,14 +409,15 @@ class ExpressionUtilsTest(unittest.TestCase):
 
         self.check_files(ret['destination_dir'], self.upload_dir_path)
 
-    def test_an_upload_download_success(self):
+    def test_upload_expression_success(self):
 
-        params = dictmerge({'destination_ref': self.getWsName() + '/test_upload_expression',
+        params = dictmerge({'destination_ref': self.getWsName() + '/test_expression',
                             'source_dir': self.upload_dir_path,
                             }, self.more_upload_params)
         self.upload_expression_success(params)
 
-        self.download_expression_success('test_upload_expression')
+    def test_download_expression_success(self):
+        self.download_expression_success('test_expression')
 
     def export_expression_success(self, obj_name, export_params):
 
@@ -445,10 +448,10 @@ class ExpressionUtilsTest(unittest.TestCase):
 
         self.check_files(export_dir_path, self.upload_dir_path)
 
-    def test_success_export_expression(self):
+    def test_export_expression_success(self):
 
         opt_params = {}
-        self.export_expression_success('test_upload_expression', opt_params)
+        self.export_expression_success('test_expression', opt_params)
 
     def fail_upload_expression(self, params, error, exception=ValueError, do_startswith=False):
 

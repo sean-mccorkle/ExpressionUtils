@@ -96,7 +96,7 @@ downloaded in the specified directory.
         if not bool(obj_name_id.strip()):
             raise ValueError("Object name or id is required in " + self.PARAM_IN_DST_REF)
 
-        dfu = DataFileUtil(self.callback_url, token=ctx['token'], service_ver='dev')
+        dfu = DataFileUtil(self.callback_url)
 
         if not isinstance(ws_name_id, int):
 
@@ -178,7 +178,7 @@ downloaded in the specified directory.
         return self.expression_utils.get_expression_levels(os.path.join(source_dir, fpkm_file))
 
 
-    def _gen_ctab_files(self, params, alignment_ref, token):
+    def _gen_ctab_files(self, params, alignment_ref):
 
         source_dir = params.get(self.PARAM_IN_SRC_DIR)
         if len(glob.glob(source_dir + '/*.ctab')) < 5:
@@ -192,7 +192,7 @@ downloaded in the specified directory.
                 bam_file_path = params[self.PARAM_IN_BAM_FILE_PATH]
             else:
                 print('Downloading bam file from alignment object')
-                rau = ReadsAlignmentUtils(self.callback_url, token, service_ver='dev')
+                rau = ReadsAlignmentUtils(self.callback_url, service_ver='dev')
                 bam_file_path = rau.download_alignment({'source_ref': alignment_ref})['bam_file']
             result = self.table_maker.build_ctab_files(
                 ref_genome_path=gtf_file[0],
@@ -258,7 +258,7 @@ downloaded in the specified directory.
 
         ws_name_id, obj_name_id, source_dir = self._proc_upload_expression_params(ctx, params)
 
-        dfu = DataFileUtil(self.callback_url, token=ctx['token'])
+        dfu = DataFileUtil(self.callback_url)
 
         objinfo = self._get_ws_info(params.get(self.PARAM_IN_ALIGNMENT_REF))
 
@@ -276,7 +276,7 @@ downloaded in the specified directory.
 
         expression_levels, tpm_expression_levels = self._get_expression_levels(source_dir)
 
-        self._gen_ctab_files(params, alignment_ref, ctx['token'])
+        self._gen_ctab_files(params, alignment_ref)
 
         uploaded_file = dfu.file_to_shock({'file_path': source_dir,
                                            'make_handle': 1,
@@ -376,7 +376,7 @@ downloaded in the specified directory.
 
         obj_ref = str(info[6]) + '/' + str(info[0])
 
-        dfu = DataFileUtil(self.callback_url, token=ctx['token'])
+        dfu = DataFileUtil(self.callback_url)
 
         try:
             expression = dfu.get_objects({'object_refs': [obj_ref]})['data']
@@ -437,7 +437,7 @@ downloaded in the specified directory.
 
         obj_ref = str(info[6]) + '/' + str(info[0])
 
-        dfu = DataFileUtil(self.callback_url, token=ctx['token'])
+        dfu = DataFileUtil(self.callback_url)
 
         try:
             expression = dfu.get_objects({'object_refs': [obj_ref]})['data']
