@@ -139,9 +139,8 @@ class GFFUtilsTest(unittest.TestCase):
 
     def test_get_gff_annotation_ref(self):
         gff_utils = GFFUtils(self.__class__.cfg, self.__class__.__LOGGER)
-        result = gff_utils.create_gff_annotation_ref(
-            self.__class__.genome_upload_result['genome_ref'],
-            '/kb/module/test/data/tablemaker/at_chrom1_section.gtf', self.__class__.ws_id)
+        result = gff_utils.create_gff_annotation_from_genome(
+            self.__class__.genome_upload_result['genome_ref'], self.__class__.ws_id)
 
         obj = self.__class__.ws.get_objects([{'ref': result}])
         self.assertEquals('KBaseRNASeq.GFFAnnotation-3.0', obj[0]['info'][2])

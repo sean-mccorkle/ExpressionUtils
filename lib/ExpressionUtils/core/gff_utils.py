@@ -95,61 +95,6 @@ class GFFUtils:
         gff_file_path = self.convert_genome_to_gff(genome_ref, self.scratch)
         return self.convert_gff_to_gtf(gff_file_path, gtf_file_path)
 
-    def create_gff_annotation_ref(self, genome_ref, gtf_file_path, workspace_name):
-        """
-        Create a workspace reference of a kbase genome annotation object from the specified
-        kbase genome object and gtf file.
-
-        See https://ci.kbase.us/#spec/type/KBaseRNASeq.GFFAnnotation
-
-        :param genome_ref: workspace reference to kbase genome object
-        :param gtf_file_path:  path to the output gtf file
-        :return: Kbase genome annotation reference.
-        """
-        log('start saving GffAnnotation object')
-
-        dfu = DataFileUtil(self.callback_url)
-
-        if isinstance(workspace_name, int) or workspace_name.isdigit():
-            workspace_id = workspace_name
-        else:
-            workspace_id = dfu.ws_name_to_id(workspace_name)
-
-        ws = Workspace(self.ws_url, token=self.token)
-        genome_data = ws.get_objects2({'objects':
-                                       [{'ref': genome_ref}]})['data'][0]['data']
-        genome_name = genome_data.get('id')
-        genome_scientific_name = genome_data.get('scientific_name')
-        gff_annotation_name = genome_name + "_GTF_Annotation"
-
-        scratch_path = os.path.join(self.scratch + os.path.basename(gtf_file_path))
-        shutil.copy(gtf_file_path, scratch_path)
-        file_to_shock_result = dfu.file_to_shock({'file_path': scratch_path,
-                                                  'make_handle': True})
-        gff_annotation_data = {'handle': file_to_shock_result['handle'],
-                               'size': file_to_shock_result['size'],
-                               'genome_id': genome_ref,
-                               'genome_scientific_name': genome_scientific_name}
-
-        os.remove(scratch_path)
-
-        object_type = 'KBaseRNASeq.GFFAnnotation'
-
-        save_object_params = {
-            'id': workspace_id,
-            'objects': [{
-                'type': object_type,
-                'data': gff_annotation_data,
-                'name': gff_annotation_name
-            }]
-        }
-
-        dfu_oi = dfu.save_objects(save_object_params)[0]
-        gff_annotation_obj_ref = str(dfu_oi[6]) + '/' + str(dfu_oi[0]) + '/' + str(dfu_oi[4])
-
-        return gff_annotation_obj_ref
-
-
     def create_gff_annotation_from_genome(self, genome_ref, workspace_name):
         """
         Create a workspace reference of a kbase genome annotation object from the specified
