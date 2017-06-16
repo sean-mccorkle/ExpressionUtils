@@ -80,12 +80,12 @@ class ExpressionUtilsTest(unittest.TestCase):
         print('created workspace ' + cls.getWsName())
 
         cls.serviceImpl = ExpressionUtils(cls.cfg)
-        cls.readUtils = ReadsUtils(cls.callbackURL, token=cls.token)
-        cls.dfu = DataFileUtil(cls.callbackURL, token=cls.token)
-        cls.assemblyUtil = AssemblyUtil(cls.callbackURL, token=cls.token)
-        cls.gfu = GenomeFileUtil(cls.callbackURL, token=cls.token)
+        cls.readUtils = ReadsUtils(cls.callbackURL)
+        cls.dfu = DataFileUtil(cls.callbackURL)
+        cls.assemblyUtil = AssemblyUtil(cls.callbackURL)
+        cls.gfu = GenomeFileUtil(cls.callbackURL)
         cls.gaAPI = GenomeAnnotationAPI(cls.service_wizard_url)
-        cls.rau = ReadsAlignmentUtils(cls.callbackURL, token=cls.token, service_ver='dev')
+        cls.rau = ReadsAlignmentUtils(cls.callbackURL)
 
         cls.scratch = cls.cfg['scratch']
         cls.callback_url = os.environ['SDK_CALLBACK_URL']
