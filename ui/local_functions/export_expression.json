@@ -1,0 +1,16 @@
+{
+    "name" : "Export Expression files",
+    "short_description" : "Exports Expression data (gtf, FPKM&TPM and ctab) files from KBase",
+    "long_description" : "Exports Expression data (gtf, FPKM&TPM and ctab) files from the KBase data stores",
+    "tags" : {
+        "categories" : ["export", "gtf", "FPKM&TPM", "ctab"],
+        "input": {
+            "file_types": [],
+            "kb_types": ["KBaseRNASeq.RNASeqExpression"]
+        },
+        "output": {
+            "file_types": ["shock"],
+            "kb_types": []
+        }
+    }
+}

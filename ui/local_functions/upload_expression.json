@@ -1,0 +1,16 @@
+{
+    "name" : "Upload Expression files",
+    "short_description" : "Uploads Expression data (gtf, FPKM&TPM and ctab) files to KBase",
+    "long_description" : "Uploads Expression data (gtf, FPKM&TPM and ctab) files to the KBase data stores",
+    "tags" : {
+        "categories" : ["upload", "gtf", "FPKM&TPM", "ctab"],
+        "input": {
+            "file_types": ["shock"],
+            "kb_types": []
+        },
+        "output": {
+            "file_types": [],
+            "kb_types": ["KBaseRNASeq.RNASeqExpression"]
+        }
+    }
+}

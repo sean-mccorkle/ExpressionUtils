@@ -1,0 +1,16 @@
+{
+    "name" : "Download Expression files",
+    "short_description" : "Downloads Expression data (gtf, FPKM&TPM and ctab) files from KBase",
+    "long_description" : "Downloads Expression data (gtf, FPKM&TPM and ctab) files from the KBase data stores",
+    "tags" : {
+        "categories" : ["download", "gtf", "FPKM&TPM", "ctab"],
+        "input": {
+            "file_types": [],
+            "kb_types": ["KBaseRNASeq.RNASeqExpression"]
+        },
+        "output": {
+            "file_types": ["gtf", "FPKM&TPM", "ctab"],
+            "kb_types": []
+        }
+    }
+}
