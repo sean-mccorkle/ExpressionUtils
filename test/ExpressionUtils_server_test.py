@@ -236,9 +236,9 @@ class ExpressionUtilsTest(unittest.TestCase):
         fasta_path = os.path.join(cls.scratch, file_name)
         shutil.copy(os.path.join('data', file_name), fasta_path)
         assembly_ref = cls.assemblyUtil.save_assembly_from_fasta({'file': {'path': fasta_path},
-                                               'workspace_name': cls.getWsName(),
-                                               'assembly_name': wsobj_name
-                                               })
+                                                                  'workspace_name': cls.getWsName(),
+                                                                  'assembly_name': wsobj_name
+                                                                  })
 
         objinfo = cls.wsClient.get_object_info_new({'objects': [{'ref': assembly_ref}]})[0]
 
@@ -252,8 +252,8 @@ class ExpressionUtilsTest(unittest.TestCase):
         align_info = cls.rau.upload_alignment({'file_path': align_path,
                                                'destination_ref': cls.getWsName() + '/' + wsobjname,
                                                'read_library_ref': cls.getWsName() + '/test_reads',
-                                               'assembly_or_genome_ref': cls.getWsName() + '/test_genome',
-                                               'condition': 'test_condition'
+                                               'condition': 'test_condition',
+                                               'assembly_or_genome_ref': cls.getWsName()+'/test_genome'
                                                })
         cls.staged[wsobjname] = {'info': align_info,
                                  'ref': align_info['obj_ref']}

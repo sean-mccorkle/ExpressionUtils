@@ -74,13 +74,12 @@ downloaded in the specified directory.
               str(time.time()) + ': ' + message)
 
     def _check_required_param(self, in_params, param_list):
-       """
-       Check if each of the params in the list are in the input params
-       """
-       for param in param_list:
+        """
+        Check if each of the params in the list are in the input params
+        """
+        for param in param_list:
             if (param not in in_params or not in_params[param]):
                 raise ValueError(param + ' parameter is required')
-
 
     def _proc_ws_obj_params(self, ctx, params):
         """
@@ -110,7 +109,6 @@ downloaded in the specified directory.
 
         return ws_name_id, obj_name_id
 
-
     def _proc_upload_expression_params(self, ctx, params):
         """
         Check the presence and validity of upload expression params
@@ -134,7 +132,6 @@ downloaded in the specified directory.
 
         return ws_name_id, obj_name_id, source_dir
 
-
     def _get_ws_info(self, obj_ref):
 
         ws = Workspace(self.ws_url)
@@ -146,23 +143,21 @@ downloaded in the specified directory.
             raise
         return info
 
-
     def _get_annotation(self, params, input_ref, workspace):
 
-        if self.PARAM_IN_ANNOTATION_REF in params and params[self.PARAM_IN_ANNOTATION_REF] is not None:
+        if self.PARAM_IN_ANNOTATION_REF in params and \
+           params[self.PARAM_IN_ANNOTATION_REF] is not None:
             return params[self.PARAM_IN_ANNOTATION_REF]
 
         obj_type = self._get_ws_info(input_ref)[2]
-        if (obj_type.startswith('KBaseGenomes.Genome')):
-            annotation_ref = self.gff_utils.create_gff_annotation_from_genome(
-                                    input_ref, workspace)
+        if obj_type.startswith('KBaseGenomes.Genome'):
+            annotation_ref = self.gff_utils.create_gff_annotation_from_genome(input_ref, workspace)
         elif obj_type.startswith('KBaseGenomeAnnotations.Assembly') or \
                 obj_type.startswith('KBaseGenomes.ContigSet'):
             raise ValueError((self.PARAM_IN_ANNOTATION_REF + ' parameter is required'))
         else:
             raise ValueError('Parameter type should be assembly or genome ref and not ' + obj_type)
         return annotation_ref
-
 
     def _get_expression_levels(self, source_dir):
 
@@ -177,7 +172,6 @@ downloaded in the specified directory.
 
         return self.expression_utils.get_expression_levels(os.path.join(source_dir, fpkm_file))
 
-
     def _gen_ctab_files(self, params, alignment_ref):
 
         source_dir = params.get(self.PARAM_IN_SRC_DIR)
@@ -188,7 +182,8 @@ downloaded in the specified directory.
             if len(gtf_file) > 1:
                 raise ValueError("Expected only one .gtf file in " + source_dir)
 
-            if self.PARAM_IN_BAM_FILE_PATH in params and params[self.PARAM_IN_BAM_FILE_PATH] is not None:
+            if self.PARAM_IN_BAM_FILE_PATH in params and \
+               params[self.PARAM_IN_BAM_FILE_PATH] is not None:
                 bam_file_path = params[self.PARAM_IN_BAM_FILE_PATH]
             else:
                 print('Downloading bam file from alignment object')
@@ -198,7 +193,6 @@ downloaded in the specified directory.
                 ref_genome_path=gtf_file[0],
                 alignment_path=bam_file_path,
                 output_dir=source_dir)
-
 
     #END_CLASS_HEADER
 
@@ -215,7 +209,6 @@ downloaded in the specified directory.
         self.table_maker = TableMaker(config)
         #END_CONSTRUCTOR
         pass
-
 
     def upload_expression(self, ctx, params):
         """
@@ -281,7 +274,7 @@ downloaded in the specified directory.
         uploaded_file = dfu.file_to_shock({'file_path': source_dir,
                                            'make_handle': 1,
                                            'pack': 'zip'
-                                          })
+                                           })
         """
         move the zipfile created in the source directory one level up
         """
@@ -293,33 +286,30 @@ downloaded in the specified directory.
         file_handle = uploaded_file['handle']
         file_size = uploaded_file['size']
 
-        expression_data = {
-                            'id': obj_name_id,
-                            'type': 'RNA-KBaseRNASeq.RNASeqExpression',
-                            'numerical_interpretation': 'FPKM',
-                            'genome_id': assembly_or_genome_ref,
-                            'annotation_id': annotation_ref,
-                            'mapped_rnaseq_alignment': {alignment['read_sample_id']: alignment_ref},
-                            'condition': alignment['condition'],
-                            'file': file_handle,
-                            'expression_levels': expression_levels,
-                            'tpm_expression_levels': tpm_expression_levels
-                          }
+        expression_data = {'id': obj_name_id,
+                           'type': 'RNA-KBaseRNASeq.RNASeqExpression',
+                           'numerical_interpretation': 'FPKM',
+                           'genome_id': assembly_or_genome_ref,
+                           'annotation_id': annotation_ref,
+                           'mapped_rnaseq_alignment': {alignment['read_sample_id']: alignment_ref},
+                           'condition': alignment['condition'],
+                           'file': file_handle,
+                           'expression_levels': expression_levels,
+                           'tpm_expression_levels': tpm_expression_levels
+                           }
+        additional_params = [self.PARAM_IN_TOOL_USED,
+                             self.PARAM_IN_TOOL_VER,
+                             self.PARAM_IN_TOOL_OPTS,
+                             self.PARAM_IN_DESCRIPTION,
+                             self.PARAM_IN_DATA_QUAL_LEVEL,
+                             self.PARAM_IN_PLATFORM,
+                             self.PARAM_IN_PROC_COMMENTS,
+                             self.PARAM_IN_MAPPED_SAMPLE_ID,
+                             self.PARAM_IN_ORIG_MEDIAN,
+                             self.PARAM_IN_EXT_SRC_DATE,
+                             self.PARAM_IN_SRC
+                             ]
 
-        additional_params = [
-                            self.PARAM_IN_TOOL_USED,
-                            self.PARAM_IN_TOOL_VER,
-                            self.PARAM_IN_TOOL_OPTS,
-                            self.PARAM_IN_DESCRIPTION,
-                            self.PARAM_IN_DATA_QUAL_LEVEL,
-                            self.PARAM_IN_PLATFORM,
-                            self.PARAM_IN_PROC_COMMENTS,
-                            self.PARAM_IN_MAPPED_SAMPLE_ID,
-                            self.PARAM_IN_ORIG_MEDIAN,
-                            self.PARAM_IN_EXT_SRC_DATE,
-                            self.PARAM_IN_SRC
-                          ]
-        
         for opt_param in additional_params:
             if opt_param in params and params[opt_param] is not None:
                 expression_data[opt_param] = params[opt_param]
@@ -455,6 +445,7 @@ downloaded in the specified directory.
                              'output is not type dict as required.')
         # return the results
         return [output]
+
     def status(self, ctx):
         #BEGIN_STATUS
         returnVal = {'state': "OK",
