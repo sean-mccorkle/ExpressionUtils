@@ -59,7 +59,6 @@ class GFFUtilsTest(unittest.TestCase):
         cls.serviceImpl = ExpressionUtils(cls.cfg)
         cls.scratch = cls.cfg['scratch']
         cls.callback_url = os.environ['SDK_CALLBACK_URL']
-        print('>>>>>>>>>>>>>>>>>>>>'+str(cls.callback_url))
 
     def test_get_expression_levels(self):
 
