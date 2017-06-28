@@ -34,7 +34,7 @@ class TableMaker:
             print "Executing: tablemaker {0}".format(tm_args)
             runProgram(logger=self.logger, progName="tablemaker", argStr=tm_args)
         except Exception as ex:
-            log("Error executing tablemaker {0}".format(tm_args), ex.message, logging.ERROR)
+            log("Error executing tablemaker {0}. {1}".format(tm_args, ex.message), logging.ERROR)
             return 1
 
         return 0
