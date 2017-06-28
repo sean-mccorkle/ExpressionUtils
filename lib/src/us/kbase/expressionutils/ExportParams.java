@@ -16,7 +16,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * <pre>
  * *
  * Required input parameters for exporting expression
- * string   source_ref         -   object reference of alignment source. The
+ * string   source_ref         -   object reference of expression source. The
  *                             object ref is 'ws_name_or_id/obj_name_or_id'
  *                             where ws_name_or_id is the workspace name or id
  *                             and obj_name_or_id is the object name or id

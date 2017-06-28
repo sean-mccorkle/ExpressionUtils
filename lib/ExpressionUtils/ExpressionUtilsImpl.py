@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 #BEGIN_HEADER
 import os
+import sys
 import time
 import shutil
 import glob
+import logging
 from datetime import datetime
 
 from pprint import pprint
@@ -30,10 +32,10 @@ class ExpressionUtils:
     A KBase module: ExpressionUtils
 
 This module is intended for use by Assemblers to upload RNASeq Expression files
-(gtf, fpkm and ctab). The expression files are uploaded as a single compressed file.
-This module also generates expression levels and tpm expression levels from the uploaded
-files and saves them in the workspace object. Once uploaded, the expression files can be
-downloaded in the specified directory.
+(gtf, fpkm and ctab). This module generates the ctab files and tpm data if they are absent.
+The expression files are uploaded as a single compressed file.This module also generates
+expression levels and tpm expression levels from the input files and saves them in the
+workspace object. Once uploaded, the expression files can be downloaded onto an output directory.
     '''
 
     ######## WARNING FOR GEVENT USERS ####### noqa
@@ -44,7 +46,7 @@ downloaded in the specified directory.
     ######################################### noqa
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/kbaseapps/ExpressionUtils.git"
-    GIT_COMMIT_HASH = "bad753579d17c55a83f2f6d2e888e0ff2243c6ba"
+    GIT_COMMIT_HASH = "ae7f5ff211c85ac0af0370963c61d2952cb8dd05"
 
     #BEGIN_CLASS_HEADER
 
@@ -79,7 +81,7 @@ downloaded in the specified directory.
         """
         for param in param_list:
             if (param not in in_params or not in_params[param]):
-                raise ValueError(param + ' parameter is required')
+                raise ValueError('{} parameter is required'.format(param))
 
     def _proc_ws_obj_params(self, ctx, params):
         """
@@ -187,12 +189,25 @@ downloaded in the specified directory.
                 bam_file_path = params[self.PARAM_IN_BAM_FILE_PATH]
             else:
                 print('Downloading bam file from alignment object')
-                rau = ReadsAlignmentUtils(self.callback_url, service_ver='dev')
-                bam_file_path = rau.download_alignment({'source_ref': alignment_ref})['bam_file']
+                rau = ReadsAlignmentUtils(self.callback_url)
+                alignment_retVal = rau.download_alignment({'source_ref': alignment_ref})
+                alignment_dir = alignment_retVal.get('destination_dir')
+                tmp_file_path = os.path.join(alignment_dir, 'accepted_hits.bam')
+                if os.path.isfile(tmp_file_path):
+                    bam_file_path = tmp_file_path
+                else:
+                    tmp_file_path = os.path.join(alignment_dir, 'accepted_hits_sorted.bam')
+                    if os.path.isfile(tmp_file_path):
+                        bam_file_path = tmp_file_path
+                    else:
+                        raise ValueError('accepted_hits.bam or accepted_hits_sorted.bam not found in {}'.
+                                         format(alignment_dir))
             result = self.table_maker.build_ctab_files(
                 ref_genome_path=gtf_file[0],
                 alignment_path=bam_file_path,
                 output_dir=source_dir)
+            if result != 0:
+                raise ValueError('Tablemaker failed')
 
     #END_CLASS_HEADER
 
@@ -200,15 +215,27 @@ downloaded in the specified directory.
     # be found
     def __init__(self, config):
         #BEGIN_CONSTRUCTOR
+        self.__LOGGER = logging.getLogger('ExpressionUtils')
+        self.__LOGGER.setLevel(logging.INFO)
+        streamHandler = logging.StreamHandler(sys.stdout)
+        formatter = logging.Formatter(
+            "%(asctime)s - %(filename)s - %(lineno)d - %(levelname)s - %(message)s")
+        formatter.converter = time.gmtime
+        streamHandler.setFormatter(formatter)
+        self.__LOGGER.addHandler(streamHandler)
+        self.__LOGGER.info("Logger was set")
+
         self.config = config
         self.scratch = config['scratch']
         self.callback_url = os.environ['SDK_CALLBACK_URL']
         self.ws_url = config['workspace-url']
         self.expression_utils = Expression_Utils(config)
-        self.gff_utils = GFFUtils(config)
-        self.table_maker = TableMaker(config)
+        self.dfu = DataFileUtil(self.callback_url)
+        self.gff_utils = GFFUtils(config, self.__LOGGER)
+        self.table_maker = TableMaker(config, self.__LOGGER)
         #END_CONSTRUCTOR
         pass
+
 
     def upload_expression(self, ctx, params):
         """
@@ -219,25 +246,20 @@ downloaded in the specified directory.
            data. The object ref is 'ws_name_or_id/obj_name_or_id' where
            ws_name_or_id is the workspace name or id and obj_name_or_id is
            the object name or id string   source_dir             -  
-           directory with the files to be uploaded string  
-           assembly_or_genome_ref -   workspace object ref of assembly or
-           genome annotation that was used to build the alignment string  
-           annotation_ref         -   annotation ref mapping 
-           mapped_alignment       -   mapping of read_lib_ref and
-           alignment_ref string   condition                    - string  
-           tool_used              -   stringtie or  cufflinks string  
-           tool_version           - *) -> structure: parameter
+           directory with the files to be uploaded string   alignment_ref    
+           -   alignment workspace object reference string   tool_used       
+           -   stringtie or cufflinks string   tool_version           -  
+           version of the tool used *) -> structure: parameter
            "destination_ref" of String, parameter "source_dir" of String,
-           parameter "assembly_or_genome_ref" of String, parameter
-           "annotation_ref" of String, parameter "mapped_alignment" of
-           mapping from String to String, parameter "condition" of String,
-           parameter "tool_used" of String, parameter "tool_version" of
-           String, parameter "tool_opts" of mapping from String to String,
+           parameter "alignment_ref" of String, parameter "tool_used" of
+           String, parameter "tool_version" of String, parameter
+           "annotation_ref" of String, parameter "bam_file_path" of String,
            parameter "data_quality_level" of Long, parameter
            "original_median" of Double, parameter "description" of String,
            parameter "platform" of String, parameter "source" of String,
            parameter "external_source_date" of String, parameter
-           "processing_comments" of String
+           "processing_comments" of String, parameter "tool_opts" of mapping
+           from String to String
         :returns: instance of type "UploadExpressionOutput" (*     Output
            from upload expression    *) -> structure: parameter "obj_ref" of
            String
@@ -251,14 +273,12 @@ downloaded in the specified directory.
 
         ws_name_id, obj_name_id, source_dir = self._proc_upload_expression_params(ctx, params)
 
-        dfu = DataFileUtil(self.callback_url)
-
         objinfo = self._get_ws_info(params.get(self.PARAM_IN_ALIGNMENT_REF))
 
         alignment_ref = str(objinfo[6]) + '/' + str(objinfo[0])
 
         try:
-            alignment_obj = dfu.get_objects({'object_refs': [alignment_ref]})['data'][0]
+            alignment_obj = self.dfu.get_objects({'object_refs': [alignment_ref]})['data'][0]
         except DFUError as e:
             self.log('Logging stacktrace from workspace exception:\n' + e.data)
             raise
@@ -271,10 +291,10 @@ downloaded in the specified directory.
 
         self._gen_ctab_files(params, alignment_ref)
 
-        uploaded_file = dfu.file_to_shock({'file_path': source_dir,
-                                           'make_handle': 1,
-                                           'pack': 'zip'
-                                           })
+        uploaded_file = self.dfu.file_to_shock({'file_path': source_dir,
+                                                'make_handle': 1,
+                                                'pack': 'zip'
+                                                })
         """
         move the zipfile created in the source directory one level up
         """
@@ -314,13 +334,13 @@ downloaded in the specified directory.
             if opt_param in params and params[opt_param] is not None:
                 expression_data[opt_param] = params[opt_param]
 
-        res = dfu.save_objects(
+        res = self.dfu.save_objects(
             {"id": ws_name_id,
              "objects": [{
-                 "type": "KBaseRNASeq.RNASeqExpression",
-                 "data": expression_data,
-                 "name": obj_name_id}
-             ]})[0]
+                          "type": "KBaseRNASeq.RNASeqExpression",
+                          "data": expression_data,
+                          "name": obj_name_id}
+                         ]})[0]
 
         self.log('save complete')
 
@@ -366,10 +386,8 @@ downloaded in the specified directory.
 
         obj_ref = str(info[6]) + '/' + str(info[0])
 
-        dfu = DataFileUtil(self.callback_url)
-
         try:
-            expression = dfu.get_objects({'object_refs': [obj_ref]})['data']
+            expression = self.dfu.get_objects({'object_refs': [obj_ref]})['data']
         except DFUError as e:
             self.log('Logging stacktrace from workspace exception:\n' + e.data)
             raise
@@ -379,11 +397,11 @@ downloaded in the specified directory.
         output_dir = os.path.join(self.scratch, 'download_' + str(timestamp))
         os.mkdir(output_dir)
 
-        file_ret = dfu.shock_to_file({
-            'shock_id': expression[0]['data']['file']['id'],
-            'file_path': output_dir,
-            'unpack': 'unpack'
-        })
+        file_ret = self.dfu.shock_to_file({
+                                           'shock_id': expression[0]['data']['file']['id'],
+                                           'file_path': output_dir,
+                                           'unpack': 'unpack'
+                                           })
 
         if not os.listdir(output_dir):
             raise ValueError('No files were downloaded: ' + output_dir)
@@ -408,7 +426,7 @@ downloaded in the specified directory.
         Wrapper function for use by in-narrative downloaders to download expressions from shock *
         :param params: instance of type "ExportParams" (* Required input
            parameters for exporting expression string   source_ref         - 
-           object reference of alignment source. The object ref is
+           object reference of expression source. The object ref is
            'ws_name_or_id/obj_name_or_id' where ws_name_or_id is the
            workspace name or id and obj_name_or_id is the object name or id
            *) -> structure: parameter "source_ref" of String
@@ -427,10 +445,8 @@ downloaded in the specified directory.
 
         obj_ref = str(info[6]) + '/' + str(info[0])
 
-        dfu = DataFileUtil(self.callback_url)
-
         try:
-            expression = dfu.get_objects({'object_refs': [obj_ref]})['data']
+            expression = self.dfu.get_objects({'object_refs': [obj_ref]})['data']
         except DFUError as e:
             self.log('Logging stacktrace from workspace exception:\n' + e.data)
             raise
@@ -445,7 +461,6 @@ downloaded in the specified directory.
                              'output is not type dict as required.')
         # return the results
         return [output]
-
     def status(self, ctx):
         #BEGIN_STATUS
         returnVal = {'state': "OK",

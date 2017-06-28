@@ -86,9 +86,8 @@ class ExpressionUtilsTest(unittest.TestCase):
         cls.assemblyUtil = AssemblyUtil(cls.callbackURL)
         cls.gfu = GenomeFileUtil(cls.callbackURL)
         cls.gaAPI = GenomeAnnotationAPI(cls.service_wizard_url)
-        cls.rau = ReadsAlignmentUtils(cls.callbackURL, service_ver='dev')
+        cls.rau = ReadsAlignmentUtils(cls.callbackURL)
         cls.scratch = cls.cfg['scratch']
-        cls.callback_url = os.environ['SDK_CALLBACK_URL']
 
         cls.staged = {}
         cls.nodes_to_delete = []

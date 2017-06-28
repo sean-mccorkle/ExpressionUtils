@@ -47,8 +47,8 @@ module ExpressionUtils {
                                             not provided, then the annotation is derived from the genome object */
 
         string   bam_file_path;         /*  Optional  - Used to create ctab files if they are absent in the
-                                            source_dir. If this is not provided for ctab files generation, then
-                                            the bam file is downloaded from the input alignment object */
+                                            source_dir. If this field is not provided for ctab files generation,
+                                            then the bam file is downloaded from the input alignment_ref */
 
         int      data_quality_level;    /*  Optional */
         float    original_median;       /*  Optional */
@@ -104,7 +104,7 @@ module ExpressionUtils {
     /**
         Required input parameters for exporting expression
 
-        string   source_ref 	-   object reference of alignment source. The
+        string   source_ref 	-   object reference of expression source. The
                                     object ref is 'ws_name_or_id/obj_name_or_id'
                                     where ws_name_or_id is the workspace name or id
                                     and obj_name_or_id is the object name or id

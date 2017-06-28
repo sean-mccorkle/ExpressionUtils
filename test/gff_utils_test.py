@@ -143,4 +143,6 @@ class GFFUtilsTest(unittest.TestCase):
             self.__class__.genome_upload_result['genome_ref'], self.__class__.ws_id)
 
         obj = self.__class__.ws.get_objects([{'ref': result}])
-        self.assertEquals('KBaseRNASeq.GFFAnnotation-3.0', obj[0]['info'][2])
+
+        self.assertEqual(obj[0]['info'][2].startswith(
+            'KBaseRNASeq.GFFAnnotation'), True)

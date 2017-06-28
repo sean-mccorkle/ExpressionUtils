@@ -19,10 +19,10 @@ import us.kbase.common.service.UnauthorizedException;
  * *
  * A KBase module: ExpressionUtils
  * This module is intended for use by Assemblers to upload RNASeq Expression files
- * (gtf, fpkm and ctab). The expression files are uploaded as a single compressed file.
- * This module also generates expression levels and tpm expression levels from the uploaded
- * files and saves them in the workspace object. Once uploaded, the expression files can be
- * downloaded in the specified directory.
+ * (gtf, fpkm and ctab). This module generates the ctab files and tpm data if they are absent.
+ * The expression files are uploaded as a single compressed file.This module also generates
+ * expression levels and tpm expression levels from the input files and saves them in the
+ * workspace object. Once uploaded, the expression files can be downloaded onto an output directory.
  * *
  * </pre>
  */

@@ -42,25 +42,20 @@ class ExpressionUtils(object):
            data. The object ref is 'ws_name_or_id/obj_name_or_id' where
            ws_name_or_id is the workspace name or id and obj_name_or_id is
            the object name or id string   source_dir             -  
-           directory with the files to be uploaded string  
-           assembly_or_genome_ref -   workspace object ref of assembly or
-           genome annotation that was used to build the alignment string  
-           annotation_ref         -   annotation ref mapping 
-           mapped_alignment       -   mapping of read_lib_ref and
-           alignment_ref string   condition                    - string  
-           tool_used              -   stringtie or  cufflinks string  
-           tool_version           - *) -> structure: parameter
+           directory with the files to be uploaded string   alignment_ref    
+           -   alignment workspace object reference string   tool_used       
+           -   stringtie or cufflinks string   tool_version           -  
+           version of the tool used *) -> structure: parameter
            "destination_ref" of String, parameter "source_dir" of String,
-           parameter "assembly_or_genome_ref" of String, parameter
-           "annotation_ref" of String, parameter "mapped_alignment" of
-           mapping from String to String, parameter "condition" of String,
-           parameter "tool_used" of String, parameter "tool_version" of
-           String, parameter "tool_opts" of mapping from String to String,
+           parameter "alignment_ref" of String, parameter "tool_used" of
+           String, parameter "tool_version" of String, parameter
+           "annotation_ref" of String, parameter "bam_file_path" of String,
            parameter "data_quality_level" of Long, parameter
            "original_median" of Double, parameter "description" of String,
            parameter "platform" of String, parameter "source" of String,
            parameter "external_source_date" of String, parameter
-           "processing_comments" of String
+           "processing_comments" of String, parameter "tool_opts" of mapping
+           from String to String
         :returns: instance of type "UploadExpressionOutput" (*     Output
            from upload expression    *) -> structure: parameter "obj_ref" of
            String
@@ -92,7 +87,7 @@ class ExpressionUtils(object):
         Wrapper function for use by in-narrative downloaders to download expressions from shock *
         :param params: instance of type "ExportParams" (* Required input
            parameters for exporting expression string   source_ref         - 
-           object reference of alignment source. The object ref is
+           object reference of expression source. The object ref is
            'ws_name_or_id/obj_name_or_id' where ws_name_or_id is the
            workspace name or id and obj_name_or_id is the object name or id
            *) -> structure: parameter "source_ref" of String

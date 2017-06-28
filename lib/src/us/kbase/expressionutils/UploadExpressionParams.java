@@ -19,14 +19,11 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  *                                             The object ref is 'ws_name_or_id/obj_name_or_id'
  *                                             where ws_name_or_id is the workspace name or id
  *                                             and obj_name_or_id is the object name or id
+ *                                             
  *         string   source_dir             -   directory with the files to be uploaded
- *         string   assembly_or_genome_ref -   workspace object ref of assembly or genome
- *                                             annotation that was used to build the alignment
- *         string   annotation_ref         -   annotation ref
- *         mapping  mapped_alignment       -   mapping of read_lib_ref and alignment_ref
- *         string   condition                    -
- *         string   tool_used              -   stringtie or  cufflinks
- *         string   tool_version           -
+ *         string   alignment_ref          -   alignment workspace object reference
+ *         string   tool_used              -   stringtie or cufflinks
+ *         string   tool_version           -   version of the tool used
  *     *
  * </pre>
  * 
@@ -36,20 +33,19 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonPropertyOrder({
     "destination_ref",
     "source_dir",
-    "assembly_or_genome_ref",
-    "annotation_ref",
-    "mapped_alignment",
-    "condition",
+    "alignment_ref",
     "tool_used",
     "tool_version",
-    "tool_opts",
+    "annotation_ref",
+    "bam_file_path",
     "data_quality_level",
     "original_median",
     "description",
     "platform",
     "source",
     "external_source_date",
-    "processing_comments"
+    "processing_comments",
+    "tool_opts"
 })
 public class UploadExpressionParams {
 
@@ -57,20 +53,16 @@ public class UploadExpressionParams {
     private java.lang.String destinationRef;
     @JsonProperty("source_dir")
     private java.lang.String sourceDir;
-    @JsonProperty("assembly_or_genome_ref")
-    private java.lang.String assemblyOrGenomeRef;
-    @JsonProperty("annotation_ref")
-    private java.lang.String annotationRef;
-    @JsonProperty("mapped_alignment")
-    private Map<String, String> mappedAlignment;
-    @JsonProperty("condition")
-    private java.lang.String condition;
+    @JsonProperty("alignment_ref")
+    private java.lang.String alignmentRef;
     @JsonProperty("tool_used")
     private java.lang.String toolUsed;
     @JsonProperty("tool_version")
     private java.lang.String toolVersion;
-    @JsonProperty("tool_opts")
-    private Map<String, String> toolOpts;
+    @JsonProperty("annotation_ref")
+    private java.lang.String annotationRef;
+    @JsonProperty("bam_file_path")
+    private java.lang.String bamFilePath;
     @JsonProperty("data_quality_level")
     private Long dataQualityLevel;
     @JsonProperty("original_median")
@@ -85,6 +77,8 @@ public class UploadExpressionParams {
     private java.lang.String externalSourceDate;
     @JsonProperty("processing_comments")
     private java.lang.String processingComments;
+    @JsonProperty("tool_opts")
+    private Map<String, String> toolOpts;
     private Map<java.lang.String, Object> additionalProperties = new HashMap<java.lang.String, Object>();
 
     @JsonProperty("destination_ref")
@@ -117,63 +111,18 @@ public class UploadExpressionParams {
         return this;
     }
 
-    @JsonProperty("assembly_or_genome_ref")
-    public java.lang.String getAssemblyOrGenomeRef() {
-        return assemblyOrGenomeRef;
+    @JsonProperty("alignment_ref")
+    public java.lang.String getAlignmentRef() {
+        return alignmentRef;
     }
 
-    @JsonProperty("assembly_or_genome_ref")
-    public void setAssemblyOrGenomeRef(java.lang.String assemblyOrGenomeRef) {
-        this.assemblyOrGenomeRef = assemblyOrGenomeRef;
+    @JsonProperty("alignment_ref")
+    public void setAlignmentRef(java.lang.String alignmentRef) {
+        this.alignmentRef = alignmentRef;
     }
 
-    public UploadExpressionParams withAssemblyOrGenomeRef(java.lang.String assemblyOrGenomeRef) {
-        this.assemblyOrGenomeRef = assemblyOrGenomeRef;
-        return this;
-    }
-
-    @JsonProperty("annotation_ref")
-    public java.lang.String getAnnotationRef() {
-        return annotationRef;
-    }
-
-    @JsonProperty("annotation_ref")
-    public void setAnnotationRef(java.lang.String annotationRef) {
-        this.annotationRef = annotationRef;
-    }
-
-    public UploadExpressionParams withAnnotationRef(java.lang.String annotationRef) {
-        this.annotationRef = annotationRef;
-        return this;
-    }
-
-    @JsonProperty("mapped_alignment")
-    public Map<String, String> getMappedAlignment() {
-        return mappedAlignment;
-    }
-
-    @JsonProperty("mapped_alignment")
-    public void setMappedAlignment(Map<String, String> mappedAlignment) {
-        this.mappedAlignment = mappedAlignment;
-    }
-
-    public UploadExpressionParams withMappedAlignment(Map<String, String> mappedAlignment) {
-        this.mappedAlignment = mappedAlignment;
-        return this;
-    }
-
-    @JsonProperty("condition")
-    public java.lang.String getCondition() {
-        return condition;
-    }
-
-    @JsonProperty("condition")
-    public void setCondition(java.lang.String condition) {
-        this.condition = condition;
-    }
-
-    public UploadExpressionParams withCondition(java.lang.String condition) {
-        this.condition = condition;
+    public UploadExpressionParams withAlignmentRef(java.lang.String alignmentRef) {
+        this.alignmentRef = alignmentRef;
         return this;
     }
 
@@ -207,18 +156,33 @@ public class UploadExpressionParams {
         return this;
     }
 
-    @JsonProperty("tool_opts")
-    public Map<String, String> getToolOpts() {
-        return toolOpts;
+    @JsonProperty("annotation_ref")
+    public java.lang.String getAnnotationRef() {
+        return annotationRef;
     }
 
-    @JsonProperty("tool_opts")
-    public void setToolOpts(Map<String, String> toolOpts) {
-        this.toolOpts = toolOpts;
+    @JsonProperty("annotation_ref")
+    public void setAnnotationRef(java.lang.String annotationRef) {
+        this.annotationRef = annotationRef;
     }
 
-    public UploadExpressionParams withToolOpts(Map<String, String> toolOpts) {
-        this.toolOpts = toolOpts;
+    public UploadExpressionParams withAnnotationRef(java.lang.String annotationRef) {
+        this.annotationRef = annotationRef;
+        return this;
+    }
+
+    @JsonProperty("bam_file_path")
+    public java.lang.String getBamFilePath() {
+        return bamFilePath;
+    }
+
+    @JsonProperty("bam_file_path")
+    public void setBamFilePath(java.lang.String bamFilePath) {
+        this.bamFilePath = bamFilePath;
+    }
+
+    public UploadExpressionParams withBamFilePath(java.lang.String bamFilePath) {
+        this.bamFilePath = bamFilePath;
         return this;
     }
 
@@ -327,6 +291,21 @@ public class UploadExpressionParams {
         return this;
     }
 
+    @JsonProperty("tool_opts")
+    public Map<String, String> getToolOpts() {
+        return toolOpts;
+    }
+
+    @JsonProperty("tool_opts")
+    public void setToolOpts(Map<String, String> toolOpts) {
+        this.toolOpts = toolOpts;
+    }
+
+    public UploadExpressionParams withToolOpts(Map<String, String> toolOpts) {
+        this.toolOpts = toolOpts;
+        return this;
+    }
+
     @JsonAnyGetter
     public Map<java.lang.String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -339,7 +318,7 @@ public class UploadExpressionParams {
 
     @Override
     public java.lang.String toString() {
-        return ((((((((((((((((((((((((((((((((((("UploadExpressionParams"+" [destinationRef=")+ destinationRef)+", sourceDir=")+ sourceDir)+", assemblyOrGenomeRef=")+ assemblyOrGenomeRef)+", annotationRef=")+ annotationRef)+", mappedAlignment=")+ mappedAlignment)+", condition=")+ condition)+", toolUsed=")+ toolUsed)+", toolVersion=")+ toolVersion)+", toolOpts=")+ toolOpts)+", dataQualityLevel=")+ dataQualityLevel)+", originalMedian=")+ originalMedian)+", description=")+ description)+", platform=")+ platform)+", source=")+ source)+", externalSourceDate=")+ externalSourceDate)+", processingComments=")+ processingComments)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((((((((((("UploadExpressionParams"+" [destinationRef=")+ destinationRef)+", sourceDir=")+ sourceDir)+", alignmentRef=")+ alignmentRef)+", toolUsed=")+ toolUsed)+", toolVersion=")+ toolVersion)+", annotationRef=")+ annotationRef)+", bamFilePath=")+ bamFilePath)+", dataQualityLevel=")+ dataQualityLevel)+", originalMedian=")+ originalMedian)+", description=")+ description)+", platform=")+ platform)+", source=")+ source)+", externalSourceDate=")+ externalSourceDate)+", processingComments=")+ processingComments)+", toolOpts=")+ toolOpts)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }
