@@ -46,7 +46,7 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
     ######################################### noqa
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/kbaseapps/ExpressionUtils.git"
-    GIT_COMMIT_HASH = "ae7f5ff211c85ac0af0370963c61d2952cb8dd05"
+    GIT_COMMIT_HASH = "c2e7e1cdb3ab30d4016cacd58c6b9c86e524d0b8"
 
     #BEGIN_CLASS_HEADER
 
@@ -70,10 +70,6 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
     PARAM_IN_SRC = 'source'
 
     PARAM_IN_READ_LIB_REF = 'read_lib_ref'
-
-    def log(self, message, prefix_newline=False):
-        print(('\n' if prefix_newline else '') +
-              str(time.time()) + ': ' + message)
 
     def _check_required_param(self, in_params, param_list):
         """
@@ -107,7 +103,7 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
                 prefix = se.message.split('.')[0]
                 raise ValueError(prefix)
 
-        self.log('Obtained workspace name/id ' + str(ws_name_id))
+        self.__LOGGER.info('Obtained workspace name/id ' + str(ws_name_id))
 
         return ws_name_id, obj_name_id
 
@@ -140,8 +136,8 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
         try:
             info = ws.get_object_info_new({'objects': [{'ref': obj_ref}]})[0]
         except WorkspaceError as wse:
-            self.log('Logging workspace exception')
-            self.log(str(wse))
+            self.__LOGGER.error('Logging workspace exception')
+            self.__LOGGER.error(str(wse))
             raise
         return info
 
@@ -268,19 +264,16 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
         # return variables are: returnVal
         #BEGIN upload_expression
 
-        self.log('Starting upload expression, parsing parameters ')
+        self.__LOGGER.info('Starting upload expression, parsing parameters ')
         pprint(params)
 
         ws_name_id, obj_name_id, source_dir = self._proc_upload_expression_params(ctx, params)
 
-        objinfo = self._get_ws_info(params.get(self.PARAM_IN_ALIGNMENT_REF))
-
-        alignment_ref = str(objinfo[6]) + '/' + str(objinfo[0])
-
+        alignment_ref = params.get(self.PARAM_IN_ALIGNMENT_REF)
         try:
             alignment_obj = self.dfu.get_objects({'object_refs': [alignment_ref]})['data'][0]
         except DFUError as e:
-            self.log('Logging stacktrace from workspace exception:\n' + e.data)
+            self.__LOGGER.error('Logging stacktrace from workspace exception:\n' + e.data)
             raise
 
         alignment = alignment_obj['data']
@@ -342,7 +335,7 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
                           "name": obj_name_id}
                          ]})[0]
 
-        self.log('save complete')
+        self.__LOGGER.info('save complete')
 
         returnVal = {'obj_ref': str(res[6]) + '/' + str(res[0]) + '/' + str(res[4])}
 
@@ -368,28 +361,24 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
            the object name or id *) -> structure: parameter "source_ref" of
            String
         :returns: instance of type "DownloadExpressionOutput" (*  The output
-           of the download method.  *) -> structure: parameter "ws_id" of
-           String, parameter "destination_dir" of String
+           of the download method.  *) -> structure: parameter
+           "destination_dir" of String
         """
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN download_expression
 
-        self.log('Running download_expression with params:\n' +
+        self.__LOGGER.info('Running download_expression with params:\n' +
                  pformat(params))
 
         inref = params.get(self.PARAM_IN_SRC_REF)
         if not inref:
             raise ValueError(self.PARAM_IN_SRC_REF + ' parameter is required')
 
-        info = self._get_ws_info(inref)
-
-        obj_ref = str(info[6]) + '/' + str(info[0])
-
         try:
-            expression = self.dfu.get_objects({'object_refs': [obj_ref]})['data']
+            expression = self.dfu.get_objects({'object_refs': [inref]})['data']
         except DFUError as e:
-            self.log('Logging stacktrace from workspace exception:\n' + e.data)
+            self.__LOGGER.error('Logging stacktrace from workspace exception:\n' + e.data)
             raise
 
         # set the output dir
@@ -409,8 +398,7 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
         for f in glob.glob(output_dir + '/*.zip'):
             os.remove(f)
 
-        returnVal = {'ws_id': info[6],
-                     'destination_dir': output_dir}
+        returnVal = {'destination_dir': output_dir}
 
         #END download_expression
 
@@ -441,14 +429,10 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
         if not inref:
             raise ValueError(self.PARAM_IN_SRC_REF + ' parameter is required')
 
-        info = self._get_ws_info(inref)
-
-        obj_ref = str(info[6]) + '/' + str(info[0])
-
         try:
-            expression = self.dfu.get_objects({'object_refs': [obj_ref]})['data']
+            expression = self.dfu.get_objects({'object_refs': [inref]})['data']
         except DFUError as e:
-            self.log('Logging stacktrace from workspace exception:\n' + e.data)
+            self.__LOGGER.error('Logging stacktrace from workspace exception:\n' + e.data)
             raise
 
         output = {'shock_id': expression[0]['data']['file']['id']}

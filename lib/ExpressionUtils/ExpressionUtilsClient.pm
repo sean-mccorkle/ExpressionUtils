@@ -248,7 +248,6 @@ $return is an ExpressionUtils.DownloadExpressionOutput
 DownloadExpressionParams is a reference to a hash where the following keys are defined:
 	source_ref has a value which is a string
 DownloadExpressionOutput is a reference to a hash where the following keys are defined:
-	ws_id has a value which is a string
 	destination_dir has a value which is a string
 
 </pre>
@@ -262,7 +261,6 @@ $return is an ExpressionUtils.DownloadExpressionOutput
 DownloadExpressionParams is a reference to a hash where the following keys are defined:
 	source_ref has a value which is a string
 DownloadExpressionOutput is a reference to a hash where the following keys are defined:
-	ws_id has a value which is a string
 	destination_dir has a value which is a string
 
 
@@ -700,7 +698,6 @@ source_ref has a value which is a string
 
 <pre>
 a reference to a hash where the following keys are defined:
-ws_id has a value which is a string
 destination_dir has a value which is a string
 
 </pre>
@@ -710,7 +707,6 @@ destination_dir has a value which is a string
 =begin text
 
 a reference to a hash where the following keys are defined:
-ws_id has a value which is a string
 destination_dir has a value which is a string
 
 

@@ -75,8 +75,8 @@ class ExpressionUtils(object):
            the object name or id *) -> structure: parameter "source_ref" of
            String
         :returns: instance of type "DownloadExpressionOutput" (*  The output
-           of the download method.  *) -> structure: parameter "ws_id" of
-           String, parameter "destination_dir" of String
+           of the download method.  *) -> structure: parameter
+           "destination_dir" of String
         """
         return self._client.call_method(
             'ExpressionUtils.download_expression',

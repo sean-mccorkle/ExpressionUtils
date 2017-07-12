@@ -91,7 +91,6 @@ module ExpressionUtils {
     /**  The output of the download method.  **/
 
     typedef structure {
-        string    ws_id;                /* workspace id */
         string    destination_dir;      /* directory containing all the downloaded files  */
     } DownloadExpressionOutput;
 
