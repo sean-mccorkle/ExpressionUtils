@@ -78,3 +78,17 @@ class GFFUtilsTest(unittest.TestCase):
 
         self.assertEquals(49, len(fpkm_dict))
         self.assertEquals(49, len(tpm_dict))
+
+    def test_get_expression_levels_zero_sum_fpkm(self):
+        exp_utils = ExpressionUtils(self.__class__.cfg) # no logger specified
+
+        fpkm_dict, tpm_dict = exp_utils.get_expression_levels(
+            filepath='data/expression_utils/zero_sum_fpkm.genes.fpkm_tracking')
+
+        self.assertEquals(49, len(fpkm_dict))
+        self.assertEquals(49, len(tpm_dict))
+
+        sum_tpm = 0.0
+        for tpm in tpm_dict.values():
+            sum_tpm += tpm
+        self.assertEquals(0.0, sum_tpm)
