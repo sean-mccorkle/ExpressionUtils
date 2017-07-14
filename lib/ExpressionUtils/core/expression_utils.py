@@ -1,5 +1,24 @@
 import math
 
+import logging
+
+import time
+
+import sys
+
+
+def get_logger():
+    logger = logging.getLogger('ExpressionUtils.core.expression_utils')
+    logger.setLevel(logging.INFO)
+    streamHandler = logging.StreamHandler(sys.stdout)
+    formatter = logging.Formatter(
+        "%(asctime)s - %(filename)s - %(lineno)d - %(levelname)s - %(message)s")
+    formatter.converter = time.gmtime
+    streamHandler.setFormatter(formatter)
+    logger.addHandler(streamHandler)
+    logger.info("Logger was set")
+    return logger
+
 
 class ExpressionUtils:
     """
@@ -8,8 +27,10 @@ class ExpressionUtils:
 
     def __init__(self, config, logger=None):
         self.config = config
-        self.logger = logger
-        pass
+        if logger is not None:
+            self.logger = logger
+        else:
+            self.logger = get_logger()
 
     def get_expression_levels(self, filepath):
         """
@@ -22,7 +43,16 @@ class ExpressionUtils:
         fpkm_dict = {}
         tpm_dict = {}
         gene_col = 0
-        fpkm_col = 9
+
+        # get FPKM col index
+        try:
+            with open(filepath, 'r') as file:
+                header = file.readline()
+                fpkm_col = header.split('\t').index('FPKM')
+                self.logger.info('Using FPKM at col '+str(fpkm_col)+' in '+str(filepath))
+        except:
+            self.logger.error('Unable to find an FPKM column in the specified file: '+str(filepath))
+
         sum_fpkm = 0.0
         with open(filepath) as f:
             next(f)
