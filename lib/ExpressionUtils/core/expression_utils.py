@@ -65,7 +65,10 @@ class ExpressionUtils:
                     fpkm_dict[gene_id] = math.log(fpkm + 1, 2)
                     tpm_dict[gene_id] = fpkm
 
-        for g in tpm_dict:
-            tpm_dict[g] = math.log((tpm_dict[g] / sum_fpkm) * 1e6 + 1, 2)
+        if sum_fpkm == 0:
+            self.logger.error("Unable to compute TPM values as sum of FPKM values is 0")
+        else:
+            for g in tpm_dict:
+                tpm_dict[g] = math.log((tpm_dict[g] / sum_fpkm) * 1e6 + 1, 2)
 
         return fpkm_dict, tpm_dict
