@@ -141,15 +141,15 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
             raise
         return info
 
-    def _get_annotation(self, params, input_ref, workspace):
+    def _get_annotation(self, params, genome_or_assembly_ref, workspace):
 
         if self.PARAM_IN_ANNOTATION_REF in params and \
            params[self.PARAM_IN_ANNOTATION_REF] is not None:
             return params[self.PARAM_IN_ANNOTATION_REF]
 
-        obj_type = self._get_ws_info(input_ref)[2]
+        obj_type = self._get_ws_info(genome_or_assembly_ref)[2]
         if obj_type.startswith('KBaseGenomes.Genome'):
-            annotation_ref = self.gff_utils.create_gff_annotation_from_genome(input_ref, workspace)
+            annotation_ref = self.gff_utils.create_gtf_annotation_from_genome(genome_or_assembly_ref, workspace)
         elif obj_type.startswith('KBaseGenomeAnnotations.Assembly') or \
                 obj_type.startswith('KBaseGenomes.ContigSet'):
             raise ValueError((self.PARAM_IN_ANNOTATION_REF + ' parameter is required'))
@@ -159,14 +159,10 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
 
     def _get_expression_levels(self, source_dir):
 
-        fpkm_file = None
-        for infile in os.listdir(source_dir):
-            if 'fpkm' in infile.lower() or 'tracking' in infile.lower():
-                fpkm_file = infile
-                break
+        fpkm_file = os.path.join(source_dir, 'genes.fpkm_tracking')
 
-        if fpkm_file is None:
-            raise ValueError('FPKM tracking file is required in ' + source_dir)
+        if not os.path.isfile(fpkm_file):
+            raise ValueError('{0} file is required in {1}'.format(fpkm_file, source_dir))
 
         return self.expression_utils.get_expression_levels(os.path.join(source_dir, fpkm_file))
 
@@ -175,10 +171,11 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
         source_dir = params.get(self.PARAM_IN_SRC_DIR)
         if len(glob.glob(source_dir + '/*.ctab')) < 5:
 
-            print('=======  Generating ctab files ==========')
-            gtf_file = glob.glob(source_dir + '/*.gtf')
-            if len(gtf_file) > 1:
-                raise ValueError("Expected only one .gtf file in " + source_dir)
+            print(' =======  Generating ctab files ==========')
+            gtf_file = os.path.join(source_dir, 'transcripts.gtf')
+            if not os.path.isfile(gtf_file):
+                raise ValueError("{} file is required to generate ctab files, found missing".
+                                 format(gtf_file))
 
             if self.PARAM_IN_BAM_FILE_PATH in params and \
                params[self.PARAM_IN_BAM_FILE_PATH] is not None:
@@ -199,7 +196,7 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
                         raise ValueError('accepted_hits.bam or accepted_hits_sorted.bam not found in {}'.
                                          format(alignment_dir))
             result = self.table_maker.build_ctab_files(
-                ref_genome_path=gtf_file[0],
+                ref_genome_path=gtf_file,
                 alignment_path=bam_file_path,
                 output_dir=source_dir)
             if result != 0:

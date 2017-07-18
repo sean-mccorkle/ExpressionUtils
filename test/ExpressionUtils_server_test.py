@@ -312,16 +312,21 @@ class ExpressionUtilsTest(unittest.TestCase):
         sets up files for upload
         """
         timestamp = int((datetime.utcnow() - datetime.utcfromtimestamp(0)).total_seconds() * 1000)
-        cls.upload_dir = 'upload_' + str(timestamp)
-        cls.upload_dir_path = os.path.join(cls.scratch, cls.upload_dir)
-        cls.uploaded_zip = cls.upload_dir + '.zip'
+        cls.upload_stringtie_dir = 'upload_stringtie_' + str(timestamp)
+        cls.upload_stringtie_dir_path = os.path.join(cls.scratch, cls.upload_stringtie_dir)
+        cls.uploaded_stringtie_zip = cls.upload_stringtie_dir + '.zip'
 
-        copy_tree('data/hy5_rep1_stringtie', cls.upload_dir_path)
+        cls.upload_cufflinks_dir = 'upload_cufflinks_' + str(timestamp)
+        cls.upload_cufflinks_dir_path = os.path.join(cls.scratch, cls.upload_cufflinks_dir)
+        cls.uploaded_cufflinks_zip = cls.upload_cufflinks_dir + '.zip'
+
+        copy_tree('data/stringtie_output', cls.upload_stringtie_dir_path)
+        copy_tree('data/cufflinks_output', cls.upload_cufflinks_dir_path)
 
         # uploads reads, genome and assembly to be used as input parameters to upload_expression
 
         cls.upload_genome('test_genome', 'minimal.gbff')
-        annotation_ref = cls.upload_annotation('test_annotation', 'hy5_rep1.stringtie_out.gtf')
+        annotation_ref = cls.upload_annotation('test_annotation', 'test.gtf')
 
         int_reads = {'file': 'data/interleaved.fq',
                      'name': '',
@@ -332,16 +337,28 @@ class ExpressionUtilsTest(unittest.TestCase):
         cls.upload_assembly('test_assembly', 'test.fna')
         cls.upload_alignment('test_alignment', 'accepted_hits_sorted.bam')
 
-        cls.more_upload_params = {
+        cls.more_upload_stringtie_params = {
                                   'tool_used': 'stringtie',
                                   'tool_version': 'stringtie_version',
                                   'annotation_ref': annotation_ref,
                                   'alignment_ref': cls.getWsName() + '/test_alignment'
                                  }
-        params = dictmerge({'destination_ref': cls.getWsName() + '/test_expression',
-                            'source_dir': cls.upload_dir_path,
-                            }, cls.more_upload_params)
-        cls.getImpl().upload_expression(cls.ctx, params)
+        cls.more_upload_cufflinks_params = {
+            'tool_used': 'cufflinks',
+            'tool_version': 'cufflinks_version',
+            'annotation_ref': annotation_ref,
+            'alignment_ref': cls.getWsName() + '/test_alignment'
+        }
+        stringtie_params = dictmerge({'destination_ref': cls.getWsName() + '/test_stringtie_expression',
+                            'source_dir': cls.upload_stringtie_dir_path,
+                            }, cls.more_upload_stringtie_params)
+
+        cufflinks_params = dictmerge({'destination_ref': cls.getWsName() + '/test_cufflinks_expression',
+                            'source_dir': cls.upload_cufflinks_dir_path,
+                            }, cls.more_upload_cufflinks_params)
+
+        cls.getImpl().upload_expression(cls.ctx, stringtie_params)
+        cls.getImpl().upload_expression(cls.ctx, cufflinks_params)
 
     @classmethod
     def getSize(cls, filename):
@@ -359,7 +376,7 @@ class ExpressionUtilsTest(unittest.TestCase):
 
     # NOTE: According to Python unittest naming rules test method names should start from 'test'. # noqa
 
-    def upload_expression_success(self, params):
+    def upload_expression_success(self, params, expected_zip):
 
         obj = self.dfu.get_objects(
             {'object_refs': [params.get('destination_ref')]})['data'][0]
@@ -375,8 +392,8 @@ class ExpressionUtilsTest(unittest.TestCase):
         self.assertEqual(d['mapped_rnaseq_alignment'].keys()[0],
                          self.getWsName() + '/test_reads')
         f = d['file']
-        self.assertEqual(f['file_name'], self.uploaded_zip)
-        self.assertEqual(f['remote_md5'], self.md5(os.path.join(self.scratch, self.uploaded_zip)))
+        self.assertEqual(f['file_name'], expected_zip)
+        self.assertEqual(f['remote_md5'], self.md5(os.path.join(self.scratch, expected_zip)))
 
         self.handles_to_delete.append(f['id'])
 
@@ -394,7 +411,7 @@ class ExpressionUtilsTest(unittest.TestCase):
 
             print("Files checked: " + new_file_path + ', ' + orig_file_path)
 
-    def download_expression_success(self, obj_name):
+    def download_expression_success(self, obj_name, upload_dir_path):
 
         test_name = inspect.stack()[1][3]
         print('\n**** starting expected downlaod success test: ' + test_name + ' ***\n')
@@ -406,19 +423,30 @@ class ExpressionUtilsTest(unittest.TestCase):
         pprint(ret)
         print("========================================================")
 
-        self.check_files(ret['destination_dir'], self.upload_dir_path)
+        self.check_files(ret['destination_dir'], upload_dir_path)
 
-    def test_upload_expression_success(self):
+    def test_upload_stringtie_expression_success(self):
 
-        params = dictmerge({'destination_ref': self.getWsName() + '/test_expression',
-                            'source_dir': self.upload_dir_path,
-                            }, self.more_upload_params)
-        self.upload_expression_success(params)
+        params = dictmerge({'destination_ref': self.getWsName() + '/test_stringtie_expression',
+                            'source_dir': self.upload_stringtie_dir_path,
+                            }, self.more_upload_stringtie_params)
+        self.upload_expression_success(params, self.uploaded_stringtie_zip)
 
-    def test_download_expression_success(self):
-        self.download_expression_success('test_expression')
+    def test_upload_cufflinks_expression_success(self):
 
-    def export_expression_success(self, obj_name, export_params):
+        params = dictmerge({'destination_ref': self.getWsName() + '/test_cufflinks_expression',
+                            'source_dir': self.upload_cufflinks_dir_path,
+                            }, self.more_upload_cufflinks_params)
+        self.upload_expression_success(params, self.uploaded_cufflinks_zip)
+
+
+    def test_download_stringtie_expression_success(self):
+        self.download_expression_success('test_stringtie_expression', self.upload_stringtie_dir_path)
+
+    def test_download_cufflinks_expression_success(self):
+        self.download_expression_success('test_cufflinks_expression', self.upload_cufflinks_dir_path)
+
+    def export_expression_success(self, obj_name, export_params, upload_dir, uploaded_zip):
 
         test_name = inspect.stack()[1][3]
         print('\n*** starting expected export pass test: ' + test_name + ' **')
@@ -428,9 +456,9 @@ class ExpressionUtilsTest(unittest.TestCase):
         headers = {'Authorization': 'OAuth ' + self.token}
         r = requests.get(node_url, headers=headers, allow_redirects=True)
         fn = r.json()['data']['file']['name']
-        self.assertEquals(fn, self.uploaded_zip)
+        self.assertEquals(fn, uploaded_zip)
         temp_dir = tempfile.mkdtemp(dir=self.scratch)
-        export_dir = self.upload_dir.replace('upload', 'export')
+        export_dir = upload_dir.replace('upload', 'export')
         export_dir_path = os.path.join(temp_dir, export_dir)
         export_file_path = export_dir_path + '.zip'
         print('export file path: ' + export_file_path)
@@ -445,12 +473,25 @@ class ExpressionUtilsTest(unittest.TestCase):
         with ZipFile(export_file_path) as z:
             z.extractall(export_dir_path)
 
-        self.check_files(export_dir_path, self.upload_dir_path)
+        self.check_files(export_dir_path, self.upload_stringtie_dir_path)
 
-    def test_export_expression_success(self):
+    '''
+    def test_export_stringtie_expression_success(self):
 
         opt_params = {}
-        self.export_expression_success('test_expression', opt_params)
+        self.export_expression_success('test_stringtie_expression',
+                                       opt_params,
+                                       self.upload_stringtie_dir,
+                                       self.uploaded_stringtie_zip)
+
+    def test_export_cufflinks_expression_success(self):
+
+        opt_params = {}
+        self.export_expression_success('test_cufflinks_expression',
+                                       opt_params,
+                                       self.upload_cufflinks_dir,
+                                       self.uploaded_cufflinks_zip)
+    '''
 
     def fail_upload_expression(self, params, error, exception=ValueError, do_startswith=False):
 
@@ -472,7 +513,7 @@ class ExpressionUtilsTest(unittest.TestCase):
             dictmerge({
                         'condition': 'bar',
                         'source_dir': 'test'
-                       }, self.more_upload_params),
+                       }, self.more_upload_stringtie_params),
             'destination_ref parameter is required')
 
     def test_upload_fail_no_ws_name(self):
@@ -481,7 +522,7 @@ class ExpressionUtilsTest(unittest.TestCase):
                          'condition': 'bar',
                          'destination_ref': '/foo',
                          'source_dir': 'test'
-                       }, self.more_upload_params),
+                       }, self.more_upload_stringtie_params),
             'Workspace name or id is required in destination_ref')
 
     def test_upload_fail_no_obj_name(self):
@@ -490,14 +531,14 @@ class ExpressionUtilsTest(unittest.TestCase):
                          'condition': 'bar',
                          'destination_ref': self.getWsName() + '/',
                          'source_dir': 'test'
-                       }, self.more_upload_params),
+                       }, self.more_upload_stringtie_params),
             'Object name or id is required in destination_ref')
 
     def test_upload_fail_no_file(self):
         self.fail_upload_expression(
             dictmerge({
                          'destination_ref': self.getWsName()+'/foo'
-                       }, self.more_upload_params),
+                       }, self.more_upload_stringtie_params),
             'source_dir parameter is required')
 
     def test_upload_fail_non_existant_file(self):
@@ -505,7 +546,7 @@ class ExpressionUtilsTest(unittest.TestCase):
             dictmerge({
                         'destination_ref': self.getWsName()+'/foo',
                         'source_dir': 'foo'
-                      }, self.more_upload_params),
+                      }, self.more_upload_stringtie_params),
             'Source directory does not exist: foo')
 
     def test_upload_fail_bad_wsname(self):
@@ -513,7 +554,7 @@ class ExpressionUtilsTest(unittest.TestCase):
             dictmerge({
                         'destination_ref': '&bad' + '/foo',
                         'source_dir': 'foo'
-                          }, self.more_upload_params),
+                          }, self.more_upload_stringtie_params),
             'Illegal character in workspace name &bad: &')
 
     def test_upload_fail_non_existant_wsname(self):
@@ -521,7 +562,7 @@ class ExpressionUtilsTest(unittest.TestCase):
             dictmerge({
                         'destination_ref': '1s' + '/foo',
                         'source_dir': 'bar'
-                      }, self.more_upload_params),
+                      }, self.more_upload_stringtie_params),
             'No workspace with name 1s exists')
 
-    # TO DO:  add more tests
+

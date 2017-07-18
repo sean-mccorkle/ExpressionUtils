@@ -100,33 +100,6 @@ class GFFUtilsTest(unittest.TestCase):
         cls.genome_upload_result = gfu.genbank_to_genome(genbankToGenomeParams)
         print('genbank_to_genome save result: ' + str(cls.genome_upload_result))
 
-    def test_convert_gff_to_gtf(self):
-        gtf_file_path = '/kb/module/work/at_chrom1_section.gtf'
-
-        if os.path.exists(gtf_file_path):
-            os.remove(gtf_file_path)
-
-        gff_utils = GFFUtils(self.__class__.cfg, self.__class__.__LOGGER)
-
-        result = gff_utils.convert_gff_to_gtf(gff_file_path='data/gff_utils/at_chrom1_section.gff',
-                                              gtf_file_path=gtf_file_path)
-
-        self.assertEquals(result, 0)
-        self.assertTrue(gtf_file_path)
-        self.assertEquals(hashlib.md5(open(gtf_file_path, 'rb').read()).hexdigest(),
-                          '73288223c46c11ec23bf9602ac1ef72f')
-
-    def test_convert_genome_to_gff(self):
-        gff_utils = GFFUtils(self.__class__.cfg, self.__class__.__LOGGER)
-
-        gff_file_path = gff_utils.convert_genome_to_gff(
-            self.__class__.genome_upload_result['genome_ref'],
-            '/kb/module/work/tmp')
-
-        self.assertEquals("/kb/module/work/tmp/at_chrom1_section.gff", str(gff_file_path))
-        self.assertEquals(hashlib.md5(open(gff_file_path, 'rb').read()).hexdigest(),
-                          'b21026788423648b2a1e200af702ff44')
-
     def test_convert_genome_to_gtf(self):
         target_path = '/kb/module/work/tmp/at_chrom1_section_test.gtf'
         gff_utils = GFFUtils(self.__class__.cfg, self.__class__.__LOGGER)
@@ -137,9 +110,9 @@ class GFFUtilsTest(unittest.TestCase):
         self.assertEquals(hashlib.md5(open(target_path, 'rb').read()).hexdigest(),
                           '73288223c46c11ec23bf9602ac1ef72f')
 
-    def test_get_gff_annotation_ref(self):
+    def test_get_gtf_annotation_ref(self):
         gff_utils = GFFUtils(self.__class__.cfg, self.__class__.__LOGGER)
-        result = gff_utils.create_gff_annotation_from_genome(
+        result = gff_utils.create_gtf_annotation_from_genome(
             self.__class__.genome_upload_result['genome_ref'], self.__class__.ws_id)
 
         obj = self.__class__.ws.get_objects([{'ref': result}])
