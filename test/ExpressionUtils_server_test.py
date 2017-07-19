@@ -438,15 +438,15 @@ class ExpressionUtilsTest(unittest.TestCase):
                             'source_dir': self.upload_cufflinks_dir_path,
                             }, self.more_upload_cufflinks_params)
         self.upload_expression_success(params, self.uploaded_cufflinks_zip)
-
-
+    
     def test_download_stringtie_expression_success(self):
         self.download_expression_success('test_stringtie_expression', self.upload_stringtie_dir_path)
 
     def test_download_cufflinks_expression_success(self):
         self.download_expression_success('test_cufflinks_expression', self.upload_cufflinks_dir_path)
 
-    def export_expression_success(self, obj_name, export_params, upload_dir, uploaded_zip):
+    def export_expression_success(self, obj_name, export_params,
+                                  upload_dir, upload_dir_path, uploaded_zip):
 
         test_name = inspect.stack()[1][3]
         print('\n*** starting expected export pass test: ' + test_name + ' **')
@@ -473,15 +473,15 @@ class ExpressionUtilsTest(unittest.TestCase):
         with ZipFile(export_file_path) as z:
             z.extractall(export_dir_path)
 
-        self.check_files(export_dir_path, self.upload_stringtie_dir_path)
+        self.check_files(export_dir_path, upload_dir_path)
 
-    '''
     def test_export_stringtie_expression_success(self):
 
         opt_params = {}
         self.export_expression_success('test_stringtie_expression',
                                        opt_params,
                                        self.upload_stringtie_dir,
+                                       self.upload_stringtie_dir_path,
                                        self.uploaded_stringtie_zip)
 
     def test_export_cufflinks_expression_success(self):
@@ -490,8 +490,9 @@ class ExpressionUtilsTest(unittest.TestCase):
         self.export_expression_success('test_cufflinks_expression',
                                        opt_params,
                                        self.upload_cufflinks_dir,
+                                       self.upload_cufflinks_dir_path,
                                        self.uploaded_cufflinks_zip)
-    '''
+    
 
     def fail_upload_expression(self, params, error, exception=ValueError, do_startswith=False):
 
@@ -564,5 +565,4 @@ class ExpressionUtilsTest(unittest.TestCase):
                         'source_dir': 'bar'
                       }, self.more_upload_stringtie_params),
             'No workspace with name 1s exists')
-
 

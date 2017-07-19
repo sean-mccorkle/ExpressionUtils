@@ -159,19 +159,20 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
 
     def _get_expression_levels(self, source_dir):
 
-        fpkm_file = os.path.join(source_dir, 'genes.fpkm_tracking')
+        fpkm_file_path = os.path.join(source_dir, 'genes.fpkm_tracking')
 
-        if not os.path.isfile(fpkm_file):
-            raise ValueError('{0} file is required in {1}'.format(fpkm_file, source_dir))
+        if not os.path.isfile(fpkm_file_path):
+            raise ValueError('{} file is required'.format(fpkm_file_path))
 
-        return self.expression_utils.get_expression_levels(os.path.join(source_dir, fpkm_file))
+        self.__LOGGER.info('Generating expression levels from {}'. format(fpkm_file_path))
+        return self.expression_utils.get_expression_levels(fpkm_file_path)
 
     def _gen_ctab_files(self, params, alignment_ref):
 
         source_dir = params.get(self.PARAM_IN_SRC_DIR)
         if len(glob.glob(source_dir + '/*.ctab')) < 5:
 
-            print(' =======  Generating ctab files ==========')
+            self.__LOGGER.info(' =======  Generating ctab files ==========')
             gtf_file = os.path.join(source_dir, 'transcripts.gtf')
             if not os.path.isfile(gtf_file):
                 raise ValueError("{} file is required to generate ctab files, found missing".
@@ -181,7 +182,7 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
                params[self.PARAM_IN_BAM_FILE_PATH] is not None:
                 bam_file_path = params[self.PARAM_IN_BAM_FILE_PATH]
             else:
-                print('Downloading bam file from alignment object')
+                self.__LOGGER.info('Downloading bam file from alignment object')
                 rau = ReadsAlignmentUtils(self.callback_url)
                 alignment_retVal = rau.download_alignment({'source_ref': alignment_ref})
                 alignment_dir = alignment_retVal.get('destination_dir')
@@ -336,7 +337,7 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
 
         returnVal = {'obj_ref': str(res[6]) + '/' + str(res[0]) + '/' + str(res[4])}
 
-        print('Uploaded object: ')
+        self.__LOGGER.info('Uploaded object: ')
         print(returnVal)
         #END upload_expression
 
