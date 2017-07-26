@@ -131,8 +131,7 @@ UploadExpressionParams is a reference to a hash where the following keys are def
 	destination_ref has a value which is a string
 	source_dir has a value which is a string
 	alignment_ref has a value which is a string
-	tool_used has a value which is a string
-	tool_version has a value which is a string
+	genome_ref has a value which is a string
 	annotation_ref has a value which is a string
 	bam_file_path has a value which is a string
 	data_quality_level has a value which is an int
@@ -142,7 +141,6 @@ UploadExpressionParams is a reference to a hash where the following keys are def
 	source has a value which is a string
 	external_source_date has a value which is a string
 	processing_comments has a value which is a string
-	tool_opts has a value which is a reference to a hash where the key is a string and the value is a string
 UploadExpressionOutput is a reference to a hash where the following keys are defined:
 	obj_ref has a value which is a string
 
@@ -158,8 +156,7 @@ UploadExpressionParams is a reference to a hash where the following keys are def
 	destination_ref has a value which is a string
 	source_dir has a value which is a string
 	alignment_ref has a value which is a string
-	tool_used has a value which is a string
-	tool_version has a value which is a string
+	genome_ref has a value which is a string
 	annotation_ref has a value which is a string
 	bam_file_path has a value which is a string
 	data_quality_level has a value which is an int
@@ -169,7 +166,6 @@ UploadExpressionParams is a reference to a hash where the following keys are def
 	source has a value which is a string
 	external_source_date has a value which is a string
 	processing_comments has a value which is a string
-	tool_opts has a value which is a reference to a hash where the key is a string and the value is a string
 UploadExpressionOutput is a reference to a hash where the following keys are defined:
 	obj_ref has a value which is a string
 
@@ -548,8 +544,6 @@ an int
                                             
         string   source_dir             -   directory with the files to be uploaded
         string   alignment_ref          -   alignment workspace object reference
-        string   tool_used              -   stringtie or cufflinks
-        string   tool_version           -   version of the tool used
     *
 
 
@@ -562,8 +556,7 @@ a reference to a hash where the following keys are defined:
 destination_ref has a value which is a string
 source_dir has a value which is a string
 alignment_ref has a value which is a string
-tool_used has a value which is a string
-tool_version has a value which is a string
+genome_ref has a value which is a string
 annotation_ref has a value which is a string
 bam_file_path has a value which is a string
 data_quality_level has a value which is an int
@@ -573,7 +566,6 @@ platform has a value which is a string
 source has a value which is a string
 external_source_date has a value which is a string
 processing_comments has a value which is a string
-tool_opts has a value which is a reference to a hash where the key is a string and the value is a string
 
 </pre>
 
@@ -585,8 +577,7 @@ a reference to a hash where the following keys are defined:
 destination_ref has a value which is a string
 source_dir has a value which is a string
 alignment_ref has a value which is a string
-tool_used has a value which is a string
-tool_version has a value which is a string
+genome_ref has a value which is a string
 annotation_ref has a value which is a string
 bam_file_path has a value which is a string
 data_quality_level has a value which is an int
@@ -596,7 +587,6 @@ platform has a value which is a string
 source has a value which is a string
 external_source_date has a value which is a string
 processing_comments has a value which is a string
-tool_opts has a value which is a reference to a hash where the key is a string and the value is a string
 
 
 =end text
