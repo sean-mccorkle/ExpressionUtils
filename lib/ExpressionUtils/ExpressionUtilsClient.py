@@ -95,6 +95,21 @@ class ExpressionUtils(object):
             'ExpressionUtils.export_expression',
             [params], self._service_ver, context)
 
+    def get_expressionMatrix(self, params, context=None):
+        """
+        :param params: instance of type "getExprMatrixParams" (* Following
+           are the required input parameters to get Expression Matrix *) ->
+           structure: parameter "workspace_name" of String, parameter
+           "output_obj_name" of String, parameter "expressionset_ref" of
+           String
+        :returns: instance of type "getExprMatrixOutput" -> structure:
+           parameter "exprMatrix_FPKM_ref" of String, parameter
+           "exprMatrix_TPM_ref" of String
+        """
+        return self._client.call_method(
+            'ExpressionUtils.get_expressionMatrix',
+            [params], self._service_ver, context)
+
     def status(self, context=None):
         return self._client.call_method('ExpressionUtils.status',
                                         [], self._service_ver, context)

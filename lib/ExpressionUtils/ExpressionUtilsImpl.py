@@ -18,6 +18,7 @@ from Workspace.baseclient import ServerError as WorkspaceError
 from ReadsAlignmentUtils.ReadsAlignmentUtilsClient import ReadsAlignmentUtils
 from core.expression_utils import ExpressionUtils as Expression_Utils
 from core.table_maker import TableMaker
+from core.exprMatrix_utils import ExprMatrixUtils
 
 #END_HEADER
 
@@ -45,7 +46,7 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
     ######################################### noqa
     VERSION = "0.0.2"
     GIT_URL = "https://github.com/kbaseapps/ExpressionUtils.git"
-    GIT_COMMIT_HASH = "fba13042559b8dfe7af441cf24f6c664fc1ef50e"
+    GIT_COMMIT_HASH = "30967f662cae5da975163f8095e3f737d47afab8"
 
     #BEGIN_CLASS_HEADER
 
@@ -214,6 +215,7 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
         self.expression_utils = Expression_Utils(config)
         self.dfu = DataFileUtil(self.callback_url)
         self.table_maker = TableMaker(config, self.__LOGGER)
+        self.expr_matrix_utils = ExprMatrixUtils(config, self.__LOGGER)
         #END_CONSTRUCTOR
         pass
 
@@ -424,6 +426,33 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
                              'output is not type dict as required.')
         # return the results
         return [output]
+
+    def get_expressionMatrix(self, ctx, params):
+        """
+        :param params: instance of type "getExprMatrixParams" (* Following
+           are the required input parameters to get Expression Matrix *) ->
+           structure: parameter "workspace_name" of String, parameter
+           "output_obj_name" of String, parameter "expressionset_ref" of
+           String
+        :returns: instance of type "getExprMatrixOutput" -> structure:
+           parameter "exprMatrix_FPKM_ref" of String, parameter
+           "exprMatrix_TPM_ref" of String
+        """
+        # ctx is the context object
+        # return variables are: returnVal
+        #BEGIN get_expressionMatrix
+        fpkm_ref, tpm_ref = self.expr_matrix_utils.get_expression_matrix(params)
+
+        returnVal = {'exprMatrix_FPKM_ref': fpkm_ref,
+                     'exprMatrix_TPM_ref': tpm_ref}
+        #END get_expressionMatrix
+
+        # At some point might do deeper type checking...
+        if not isinstance(returnVal, dict):
+            raise ValueError('Method get_expressionMatrix return value ' +
+                             'returnVal is not type dict as required.')
+        # return the results
+        return [returnVal]
     def status(self, ctx):
         #BEGIN_STATUS
         returnVal = {'state': "OK",
