@@ -33,7 +33,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "source_dir",
     "alignment_ref",
     "genome_ref",
-    "annotation_ref",
+    "annotation_id",
     "bam_file_path",
     "data_quality_level",
     "original_median",
@@ -53,8 +53,8 @@ public class UploadExpressionParams {
     private String alignmentRef;
     @JsonProperty("genome_ref")
     private String genomeRef;
-    @JsonProperty("annotation_ref")
-    private String annotationRef;
+    @JsonProperty("annotation_id")
+    private String annotationId;
     @JsonProperty("bam_file_path")
     private String bamFilePath;
     @JsonProperty("data_quality_level")
@@ -133,18 +133,18 @@ public class UploadExpressionParams {
         return this;
     }
 
-    @JsonProperty("annotation_ref")
-    public String getAnnotationRef() {
-        return annotationRef;
+    @JsonProperty("annotation_id")
+    public String getAnnotationId() {
+        return annotationId;
     }
 
-    @JsonProperty("annotation_ref")
-    public void setAnnotationRef(String annotationRef) {
-        this.annotationRef = annotationRef;
+    @JsonProperty("annotation_id")
+    public void setAnnotationId(String annotationId) {
+        this.annotationId = annotationId;
     }
 
-    public UploadExpressionParams withAnnotationRef(String annotationRef) {
-        this.annotationRef = annotationRef;
+    public UploadExpressionParams withAnnotationId(String annotationId) {
+        this.annotationId = annotationId;
         return this;
     }
 
@@ -280,7 +280,7 @@ public class UploadExpressionParams {
 
     @Override
     public String toString() {
-        return ((((((((((((((((((((((((((((("UploadExpressionParams"+" [destinationRef=")+ destinationRef)+", sourceDir=")+ sourceDir)+", alignmentRef=")+ alignmentRef)+", genomeRef=")+ genomeRef)+", annotationRef=")+ annotationRef)+", bamFilePath=")+ bamFilePath)+", dataQualityLevel=")+ dataQualityLevel)+", originalMedian=")+ originalMedian)+", description=")+ description)+", platform=")+ platform)+", source=")+ source)+", externalSourceDate=")+ externalSourceDate)+", processingComments=")+ processingComments)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((((((("UploadExpressionParams"+" [destinationRef=")+ destinationRef)+", sourceDir=")+ sourceDir)+", alignmentRef=")+ alignmentRef)+", genomeRef=")+ genomeRef)+", annotationId=")+ annotationId)+", bamFilePath=")+ bamFilePath)+", dataQualityLevel=")+ dataQualityLevel)+", originalMedian=")+ originalMedian)+", description=")+ description)+", platform=")+ platform)+", source=")+ source)+", externalSourceDate=")+ externalSourceDate)+", processingComments=")+ processingComments)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

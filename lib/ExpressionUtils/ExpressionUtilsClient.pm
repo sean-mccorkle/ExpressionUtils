@@ -132,7 +132,7 @@ UploadExpressionParams is a reference to a hash where the following keys are def
 	source_dir has a value which is a string
 	alignment_ref has a value which is a string
 	genome_ref has a value which is a string
-	annotation_ref has a value which is a string
+	annotation_id has a value which is a string
 	bam_file_path has a value which is a string
 	data_quality_level has a value which is an int
 	original_median has a value which is a float
@@ -157,7 +157,7 @@ UploadExpressionParams is a reference to a hash where the following keys are def
 	source_dir has a value which is a string
 	alignment_ref has a value which is a string
 	genome_ref has a value which is a string
-	annotation_ref has a value which is a string
+	annotation_id has a value which is a string
 	bam_file_path has a value which is a string
 	data_quality_level has a value which is an int
 	original_median has a value which is a float
@@ -653,7 +653,7 @@ destination_ref has a value which is a string
 source_dir has a value which is a string
 alignment_ref has a value which is a string
 genome_ref has a value which is a string
-annotation_ref has a value which is a string
+annotation_id has a value which is a string
 bam_file_path has a value which is a string
 data_quality_level has a value which is an int
 original_median has a value which is a float
@@ -674,7 +674,7 @@ destination_ref has a value which is a string
 source_dir has a value which is a string
 alignment_ref has a value which is a string
 genome_ref has a value which is a string
-annotation_ref has a value which is a string
+annotation_id has a value which is a string
 bam_file_path has a value which is a string
 data_quality_level has a value which is an int
 original_median has a value which is a float

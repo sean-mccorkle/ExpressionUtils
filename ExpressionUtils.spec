@@ -39,7 +39,7 @@ module ExpressionUtils {
 
         string   genome_ref;            /*  Optional  - if alignment_ref does not contain a genome_ref
                                             this input needs to be given   */
-        string   annotation_ref;        /*  Optional  - annotation of the genome object */
+        string   annotation_id;         /*  Optional  - annotation ref of the genome object */
 
         string   bam_file_path;         /*  Optional  - Used to create ctab files if they are absent in the
                                             source_dir. If this field is not provided for ctab files generation,

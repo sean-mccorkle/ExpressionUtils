@@ -46,7 +46,7 @@ class ExpressionUtils(object):
            -   alignment workspace object reference *) -> structure:
            parameter "destination_ref" of String, parameter "source_dir" of
            String, parameter "alignment_ref" of String, parameter
-           "genome_ref" of String, parameter "annotation_ref" of String,
+           "genome_ref" of String, parameter "annotation_id" of String,
            parameter "bam_file_path" of String, parameter
            "data_quality_level" of Long, parameter "original_median" of
            Double, parameter "description" of String, parameter "platform" of

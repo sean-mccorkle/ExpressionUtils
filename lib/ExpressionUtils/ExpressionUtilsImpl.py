@@ -46,7 +46,7 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
     ######################################### noqa
     VERSION = "0.0.2"
     GIT_URL = "https://github.com/kbaseapps/ExpressionUtils.git"
-    GIT_COMMIT_HASH = "30967f662cae5da975163f8095e3f737d47afab8"
+    GIT_COMMIT_HASH = "6875c099bdf405e327d5aa5fb15a6909becced18"
 
     #BEGIN_CLASS_HEADER
 
@@ -56,7 +56,7 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
     PARAM_IN_ALIGNMENT_REF = 'alignment_ref'
 
     PARAM_IN_GENOME_REF = 'genome_ref'
-    PARAM_IN_ANNOTATION_REF = 'annotation_ref'
+    PARAM_IN_ANNOTATION_ID = 'annotation_id'
     PARAM_IN_BAM_FILE_PATH = 'bam_file_path'
     PARAM_IN_DESCRIPTION = 'description'
     PARAM_IN_DATA_QUAL_LEVEL = 'data_quality_level'
@@ -233,7 +233,7 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
            -   alignment workspace object reference *) -> structure:
            parameter "destination_ref" of String, parameter "source_dir" of
            String, parameter "alignment_ref" of String, parameter
-           "genome_ref" of String, parameter "annotation_ref" of String,
+           "genome_ref" of String, parameter "annotation_id" of String,
            parameter "bam_file_path" of String, parameter
            "data_quality_level" of Long, parameter "original_median" of
            Double, parameter "description" of String, parameter "platform" of
@@ -293,7 +293,7 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
                            'expression_levels': expression_levels,
                            'tpm_expression_levels': tpm_expression_levels
                            }
-        additional_params = [self.PARAM_IN_ANNOTATION_REF,
+        additional_params = [self.PARAM_IN_ANNOTATION_ID,
                              self.PARAM_IN_DESCRIPTION,
                              self.PARAM_IN_DATA_QUAL_LEVEL,
                              self.PARAM_IN_PLATFORM,
