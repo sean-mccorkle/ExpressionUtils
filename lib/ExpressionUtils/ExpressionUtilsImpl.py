@@ -286,7 +286,7 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
 
         expression_data = {
                            'numerical_interpretation': 'FPKM',
-                           'genome_ref': genome_ref,
+                           'genome_id': genome_ref,
                            'mapped_rnaseq_alignment': {alignment['read_sample_id']: alignment_ref},
                            'condition': alignment['condition'],
                            'file': file_handle,
