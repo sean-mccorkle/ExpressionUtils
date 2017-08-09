@@ -108,7 +108,8 @@ class ExprMatrixUtils:
                             'values': [],
                             'col_ids': expr_set_data['expr_obj_names']
                             },
-                    'feature_mapping' : {}
+                    'feature_mapping' : {},
+                    'condition_mapping': expr_set_data['condition_map']
                    }
 
         # we need to load row-by-row to preserve the order
@@ -147,6 +148,7 @@ class ExprMatrixUtils:
         expr_obj_names = list()
         fpkm_tables = list()
         tpm_tables = list()
+        condition_map = dict()
         tpm_table = None
         for expr_obj_ref in expr_set_data['expr_obj_refs']:
             try:
@@ -162,7 +164,9 @@ class ExprMatrixUtils:
                 raise Exception('Unable to download expression object {0} from workspace {1}'.
                                 format(expr_obj_ref, expr_set_data['ws_name']))
 
-            expr_obj_names.append(expr.get('info')[1])
+            expr_name = expr.get('info')[1]
+            expr_obj_names.append(expr_name)
+            condition_map.update({expr_name: expr.get('data').get('condition')})
             num_interp = expr.get('data').get('numerical_interpretation')
             if num_interp != 'FPKM':
                 raise Exception(
@@ -184,6 +188,7 @@ class ExprMatrixUtils:
                 tpm_tables.append(tpm_table)
 
         expr_set_data['expr_obj_names'] = expr_obj_names
+        expr_set_data['condition_map'] = condition_map
         output_obj_name = params.get(self.PARAM_IN_OBJ_NAME)
         fpkm_ref = self.save_expression_matrix(fpkm_tables,
                                                expr_set_data,
