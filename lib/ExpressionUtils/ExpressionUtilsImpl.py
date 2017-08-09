@@ -308,12 +308,23 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
             if opt_param in params and params[opt_param] is not None:
                 expression_data[opt_param] = params[opt_param]
 
+        extra_provenance_input_refs = list()
+        extra_provenance_input_refs.append(params.get(self.PARAM_IN_ALIGNMENT_REF))
+        if self.PARAM_IN_GENOME_REF in params and params.get(self.PARAM_IN_GENOME_REF) is not None:
+            extra_provenance_input_refs.append(params.get(self.PARAM_IN_GENOME_REF))
+
+        self.__LOGGER.info('===========   Adding extra_provenance_refs')
+        self.__LOGGER.info(str(extra_provenance_input_refs))
+        self.__LOGGER.info('==========================================')
+
         res = self.dfu.save_objects(
             {"id": ws_name_id,
              "objects": [{
                           "type": "KBaseRNASeq.RNASeqExpression",
                           "data": expression_data,
-                          "name": obj_name_id}
+                          "name": obj_name_id,
+                          "extra_provenance_input_refs": extra_provenance_input_refs
+                         }
                          ]})[0]
 
         self.__LOGGER.info('save complete')
