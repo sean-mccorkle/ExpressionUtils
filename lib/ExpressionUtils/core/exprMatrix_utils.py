@@ -117,8 +117,7 @@ class ExprMatrixUtils:
         for gene_id in all_rows.keys():
             em_data['feature_mapping'][gene_id] = gene_id
             em_data['data']['row_ids'].append(gene_id)
-            em_data['data']['values'].append( all_rows[gene_id] )
-            em_data['feature_mapping'][gene_id] = gene_id   # QUESTION: What to do here?
+            em_data['data']['values'].append(all_rows[gene_id])
 
         try:
             self.logger.info( 'saving em_data em_name {0}'.format(em_obj_name))
