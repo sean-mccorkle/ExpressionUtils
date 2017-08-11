@@ -350,8 +350,8 @@ class ExpressionUtilsTest(unittest.TestCase):
         cls.upload_empty_data('empty')
 
         cls.upload_assembly('test_assembly', 'test.fna')
-        cls.upload_alignment_with_genome('test_alignment_genome', 'accepted_hits_sorted.bam')
-        cls.upload_alignment_with_assembly('test_alignment_assembly', 'accepted_hits_sorted.bam')
+        cls.upload_alignment_with_genome('test_alignment_genome', 'alignment.bam')
+        cls.upload_alignment_with_assembly('test_alignment_assembly', 'alignment.bam')
 
         cls.more_upload_stringtie_params = {
                                   'alignment_ref': cls.getWsName() + '/test_alignment_genome'
@@ -392,7 +392,7 @@ class ExpressionUtilsTest(unittest.TestCase):
 
         test_name = inspect.stack()[1][3]
         print('\n**** starting expected upload expression success test: ' + test_name + ' ***\n')
-
+        print('---------------------------------------------------------------------------------------')
         obj = self.dfu.get_objects(
             {'object_refs': [params.get('destination_ref')]})['data'][0]
 

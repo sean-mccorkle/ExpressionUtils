@@ -175,16 +175,24 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
                 rau = ReadsAlignmentUtils(self.callback_url)
                 alignment_retVal = rau.download_alignment({'source_ref': alignment_ref})
                 alignment_dir = alignment_retVal.get('destination_dir')
-                tmp_file_path = os.path.join(alignment_dir, 'accepted_hits.bam')
-                if os.path.isfile(tmp_file_path):
-                    bam_file_path = tmp_file_path
-                else:
-                    tmp_file_path = os.path.join(alignment_dir, 'accepted_hits_sorted.bam')
+
+                allbamfiles = glob.glob(alignment_dir + '/*.bam')
+                if len(allbamfiles) == 0:
+                    raise ValueError('bam file does not exist in {}'.format(d))
+                elif len(allbamfiles) == 1:
+                    bam_file_path = allbamfiles[0]
+                elif len(allbamfiles) > 1:
+                    tmp_file_path = os.path.join(alignment_dir, 'accepted_hits.bam')
                     if os.path.isfile(tmp_file_path):
                         bam_file_path = tmp_file_path
                     else:
-                        raise ValueError('accepted_hits.bam or accepted_hits_sorted.bam not found in {}'.
-                                         format(alignment_dir))
+                        tmp_file_path = os.path.join(alignment_dir, 'accepted_hits_sorted.bam')
+                        if os.path.isfile(tmp_file_path):
+                            bam_file_path = tmp_file_path
+                        else:
+                            raise ValueError('accepted_hits.bam, accepted_hits_sorted.bam or other bam file not found in {}'.
+                                             format(alignment_dir))
+
             result = self.table_maker.build_ctab_files(
                 ref_genome_path=gtf_file,
                 alignment_path=bam_file_path,
