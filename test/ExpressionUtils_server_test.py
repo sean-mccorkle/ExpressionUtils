@@ -82,7 +82,8 @@ class ExpressionUtilsTest(unittest.TestCase):
 
         cls.serviceImpl = ExpressionUtils(cls.cfg)
         cls.readUtils = ReadsUtils(cls.callbackURL)
-        cls.dfu = DataFileUtil(cls.callbackURL)
+        cls.dfu = DataFileUtil(cls.callbackURL, service_ver='dev')
+        cls.dfu.ws_name_to_id(wsname)
         cls.assemblyUtil = AssemblyUtil(cls.callbackURL)
         cls.gfu = GenomeFileUtil(cls.callbackURL)
         cls.gaAPI = GenomeAnnotationAPI(cls.service_wizard_url)
