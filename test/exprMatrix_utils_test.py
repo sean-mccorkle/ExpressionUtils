@@ -49,14 +49,15 @@ class ExprMatrixUtilsTest(unittest.TestCase):
                         'authenticated': 1})
         cls.wsURL = cls.cfg['workspace-url']
         cls.wsClient = workspaceService(cls.wsURL)
-        cls.serviceImpl = ExpressionUtils(cls.cfg)
-        cls.scratch = cls.cfg['scratch']
-        cls.callback_url = os.environ['SDK_CALLBACK_URL']
-        cls.dfu = DataFileUtil(cls.callback_url)
-        cls.gfu = GenomeFileUtil(cls.callback_url)
         suffix = int(time.time() * 1000)
         cls.wsName = "test_exprMatrixUtils_" + str(suffix)
         cls.wsClient.create_workspace({'workspace': cls.wsName})
+        cls.serviceImpl = ExpressionUtils(cls.cfg)
+        cls.scratch = cls.cfg['scratch']
+        cls.callback_url = os.environ['SDK_CALLBACK_URL']
+        cls.dfu = DataFileUtil(cls.callback_url, service_ver='dev')
+        cls.dfu.ws_name_to_id(cls.wsName)
+        cls.gfu = GenomeFileUtil(cls.callback_url)
         cls.setupdata()
 
     @classmethod
@@ -130,6 +131,7 @@ class ExprMatrixUtilsTest(unittest.TestCase):
         pprint(outputTPM_Obj)
         print("==========================================================")
         '''
+
         print("============   FPKM REF  ==============  " + fpkm_ref)
         print("============   TPM REF  ==============" + tpm_ref)
 
@@ -146,17 +148,17 @@ class ExprMatrixUtilsTest(unittest.TestCase):
         ci_rnaseq_exprset_obj_ref = '23165/2/1'
         ci_rnaseq_exprset_obj_name = 'downsized_AT_reads_hisat2_AlignmentSet_stringtie_ExpressionSet'
 
-        self.get_expr_matrix_success(ci_rnaseq_exprset_obj_ref, 'ci_rnaseq_exprset_exprmat_output')
+        self.get_expr_matrix_success(appdev_rnaseq_exprset_obj_ref, 'ci_rnaseq_exprset_exprmat_output')
 
-    #@unittest.skip("skipped test_get_expr_matrix_setapi_exprset_success")
+    @unittest.skip("skipped test_get_expr_matrix_setapi_exprset_success")
     def test_get_expr_matrix_setapi_exprset_success(self):
 
-        appdev_kbasesets_exprset_ref = '2409/348/1'
+        appdev_kbasesets_exprset_ref = '2409/391/13'
 
         ci_kbasesets_exprset_obj_ref = '23165/19/1'
         ci_kbasesets_exprset_obj_name = 'extracted_sampleset_tophat_alignment_set_expression_set'
 
-        self.get_expr_matrix_success(ci_kbasesets_exprset_obj_ref, 'setapi_exprset_exprmat_output')
+        self.get_expr_matrix_success(appdev_kbasesets_exprset_ref, 'setapi_exprset_exprmat_output')
 
 
     def fail_getExprMat(self, params, error, exception=ValueError, do_startswith=False):
