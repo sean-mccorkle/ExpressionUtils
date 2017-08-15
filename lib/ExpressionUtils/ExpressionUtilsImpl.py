@@ -46,7 +46,7 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
     ######################################### noqa
     VERSION = "0.0.2"
     GIT_URL = "https://github.com/Tianhao-Gu/ExpressionUtils.git"
-    GIT_COMMIT_HASH = "60036e9cd2aa7a3b4419bacaf884339ab75d042d"
+    GIT_COMMIT_HASH = "7d6a1cd890e2dee664dded97f2d7acded00e2f00"
 
     #BEGIN_CLASS_HEADER
 
@@ -146,7 +146,7 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
             raise ValueError('Alignment object does not contain genome_ref; "{}" parameter is required'.
                              format(self.PARAM_IN_GENOME_REF))
 
-    def _get_expression_levels(self, source_dir):
+    def _get_expression_levels(self, source_dir, genome_ref):
 
         fpkm_file_path = os.path.join(source_dir, 'genes.fpkm_tracking')
 
@@ -154,7 +154,7 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
             raise ValueError('{} file is required'.format(fpkm_file_path))
 
         self.__LOGGER.info('Generating expression levels from {}'. format(fpkm_file_path))
-        return self.expression_utils.get_expression_levels(fpkm_file_path)
+        return self.expression_utils.get_expression_levels(fpkm_file_path, genome_ref)
 
     def _gen_ctab_files(self, params, alignment_ref):
 
@@ -220,7 +220,8 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
         self.scratch = config['scratch']
         self.callback_url = os.environ['SDK_CALLBACK_URL']
         self.ws_url = config['workspace-url']
-        self.expression_utils = Expression_Utils(config)
+        self.config['SDK_CALLBACK_URL'] = self.callback_url
+        self.expression_utils = Expression_Utils(self.config)
         self.dfu = DataFileUtil(self.callback_url)
         self.table_maker = TableMaker(config, self.__LOGGER)
         self.expr_matrix_utils = ExprMatrixUtils(config, self.__LOGGER)
@@ -273,7 +274,8 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
 
         genome_ref = self._get_genome_ref(assembly_or_genome_ref, params)
 
-        expression_levels, tpm_expression_levels = self._get_expression_levels(source_dir)
+        expression_levels, tpm_expression_levels = self._get_expression_levels(source_dir, 
+                                                                               genome_ref)
 
         self._gen_ctab_files(params, alignment_ref)
 
