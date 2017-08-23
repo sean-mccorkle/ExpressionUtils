@@ -44,6 +44,7 @@ class ExprMatrixUtils:
             except DFUError as se:
                 prefix = se.message.split('.')[0]
                 raise ValueError(prefix)
+        self.ws_id = ws_name_id
 
     def get_expressionset_data(self, expressionset_ref):
 
@@ -122,12 +123,15 @@ class ExprMatrixUtils:
 
         try:
             self.logger.info( 'saving em_data em_name {0}'.format(em_obj_name))
-            obj_info = self.ws_client.save_objects({'workspace': self.params.get(self.PARAM_IN_WS_NAME),
-                                                    'objects': [
+            obj_info = self.dfu.save_objects({'id': self.ws_id,
+                                              'objects': [
                                                           { 'type': 'KBaseFeatureValues.ExpressionMatrix',
                                                             'data': em_data,
                                                             'name': em_obj_name,
-                                                            'hidden': hidden
+                                                            'hidden': hidden,
+                                                            'extra_provenance_input_refs': [
+                                                                em_data.get('genome_ref'),
+                                                                self.params[self.PARAM_IN_EXPSET_REF]]
                                                           }
                                                     ]})[0]
             self.logger.info('ws save return:\n' + pformat(obj_info))
