@@ -78,6 +78,11 @@ class GFFUtilsTest(unittest.TestCase):
 
         feature_ids += cufflinks_feature_ids
 
+        # incudes ids in novel_transcripts.gtf
+        feature_ids += ['mRNA_1', 'mRNA_2', 'mRNA_3', 'gene_1_mRNA',
+                        'MSTRG.1.1', 'MSTRG.1.2', 'MSTRG.2.1', 'MSTRG.2.2',
+                        'MSTRG.3.1']
+
         return feature_ids
 
     @patch.object(ExpressionUtils, "_get_feature_ids", side_effect=mock_get_feature_ids)
@@ -128,3 +133,28 @@ class GFFUtilsTest(unittest.TestCase):
         for tpm in tpm_dict.values():
             sum_tpm += tpm
         self.assertEquals(0.0, sum_tpm)
+
+    @patch.object(ExpressionUtils, "_get_feature_ids",
+                  side_effect=mock_get_feature_ids)
+    def test_get_transcript_expression_levels(self, _get_feature_ids):
+        exp_utils = ExpressionUtils(self.__class__.cfg)  # no logger specified
+
+        fpkm_dict, tpm_dict = exp_utils.get_expression_levels(
+            filepath='data/expression_utils/t_data.ctab',
+            genome_ref='', id_col=5)
+
+        print(fpkm_dict, tpm_dict)
+
+        expected_fpkm = {'MSTRG.1.1': 17.276905044091045, 'mRNA_1': 0.0,
+                         'MSTRG.1.2': 15.496161235946962, 'mRNA_3': 0.0,
+                         'MSTRG.2.2': 15.833910686877843, 'mRNA_2': 0.0,
+                         'MSTRG.2.1': 16.618558913364847,
+                         'MSTRG.3.1': 19.127090666492997, 'gene_1_mRNA': 0.0}
+        expected_tpm = {'MSTRG.1.1': 17.37137277377277, 'mRNA_3': 0.0,
+                        'MSTRG.1.2': 15.590627562938757, 'mRNA_1': 0.0,
+                        'MSTRG.2.2': 15.928377426832572, 'mRNA_2': 0.0,
+                        'MSTRG.2.1': 16.713026310072223,
+                        'MSTRG.3.1': 19.22155881227908, 'gene_1_mRNA': 0.0}
+
+        self.assertEqual(fpkm_dict, expected_fpkm)
+        self.assertEqual(tpm_dict, expected_tpm)

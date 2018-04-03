@@ -38,7 +38,7 @@ class ExpressionUtils:
                                            'limit': feature_num,
                                            'sort_by': [['feature_id', True]]})['features']
 
-        features_ids = map(lambda genome_feature: genome_feature.get('feature_id'), 
+        features_ids = map(lambda genome_feature: genome_feature.get('feature_id'),
                            genome_features)
 
         return list(set(features_ids))
@@ -53,7 +53,7 @@ class ExpressionUtils:
         callback_url = self.config['SDK_CALLBACK_URL']
         self.gsu = GenomeSearchUtil(callback_url)
 
-    def get_expression_levels(self, filepath, genome_ref):
+    def get_expression_levels(self, filepath, genome_ref, id_col=0):
         """
          Returns FPKM and TPM expression levels.
          # (see discussion @ https://www.biostars.org/p/160989/)
@@ -63,13 +63,12 @@ class ExpressionUtils:
         """
         fpkm_dict = {}
         tpm_dict = {}
-        gene_col = 0
 
         # get FPKM col index
         try:
             with open(filepath, 'r') as file:
                 header = file.readline()
-                fpkm_col = header.split('\t').index('FPKM')
+                fpkm_col = header.strip().split('\t').index('FPKM')
                 self.logger.info('Using FPKM at col ' + str(fpkm_col) + ' in ' + str(filepath))
         except:
             self.logger.error('Unable to find an FPKM column in the specified file: ' + str(filepath))
@@ -81,9 +80,9 @@ class ExpressionUtils:
             next(f)
             for line in f:
                 larr = line.split("\t")
-                
-                if larr[gene_col] in feature_ids:
-                    gene_id = larr[gene_col]
+
+                if larr[id_col] in feature_ids:
+                    gene_id = larr[id_col]
                 elif larr[1] in feature_ids:
                     gene_id = larr[1]
                 else:

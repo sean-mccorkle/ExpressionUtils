@@ -44,9 +44,9 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
     # state. A method could easily clobber the state set by another while
     # the latter method is running.
     ######################################### noqa
-    VERSION = "0.0.2"
-    GIT_URL = "https://github.com/Tianhao-Gu/ExpressionUtils.git"
-    GIT_COMMIT_HASH = "7d6a1cd890e2dee664dded97f2d7acded00e2f00"
+    VERSION = "0.1.1"
+    GIT_URL = "https://github.com/JamesJeffryes/ExpressionUtils.git"
+    GIT_COMMIT_HASH = "62ce653aa5c5b39a597486613bc140b173a35c99"
 
     #BEGIN_CLASS_HEADER
 
@@ -65,6 +65,7 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
     PARAM_IN_MAPPED_SAMPLE_ID = 'mapped_sample_id'
     PARAM_IN_ORIG_MEDIAN = 'original_median'
     PARAM_IN_EXT_SRC_DATE = 'external_source_date'
+    PARAM_IN_TRANSCRIPTS = 'transcripts'
     PARAM_IN_SRC = 'source'
 
     def _check_required_param(self, in_params, param_list):
@@ -146,15 +147,20 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
             raise ValueError('Alignment object does not contain genome_ref; "{}" parameter is required'.
                              format(self.PARAM_IN_GENOME_REF))
 
-    def _get_expression_levels(self, source_dir, genome_ref):
+    def _get_expression_levels(self, source_dir, genome_ref, transcripts=False):
 
         fpkm_file_path = os.path.join(source_dir, 'genes.fpkm_tracking')
+        if transcripts:
+            fpkm_file_path = os.path.join(source_dir, 't_data.ctab')
 
         if not os.path.isfile(fpkm_file_path):
             raise ValueError('{} file is required'.format(fpkm_file_path))
 
-        self.__LOGGER.info('Generating expression levels from {}'. format(fpkm_file_path))
-        return self.expression_utils.get_expression_levels(fpkm_file_path, genome_ref)
+        id_col = 5 if transcripts else 0
+        self.__LOGGER.info('Generating expression levels from {}'
+                           .format(fpkm_file_path))
+        return self.expression_utils.get_expression_levels(fpkm_file_path,
+                                                           genome_ref, id_col)
 
     def _gen_ctab_files(self, params, alignment_ref):
 
@@ -243,12 +249,13 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
            parameter "destination_ref" of String, parameter "source_dir" of
            String, parameter "alignment_ref" of String, parameter
            "genome_ref" of String, parameter "annotation_id" of String,
-           parameter "bam_file_path" of String, parameter
-           "data_quality_level" of Long, parameter "original_median" of
-           Double, parameter "description" of String, parameter "platform" of
-           String, parameter "source" of String, parameter
-           "external_source_date" of String, parameter "processing_comments"
-           of String
+           parameter "bam_file_path" of String, parameter "transcripts" of
+           type "boolean" (A boolean - 0 for false, 1 for true. @range (0,
+           1)), parameter "data_quality_level" of Long, parameter
+           "original_median" of Double, parameter "description" of String,
+           parameter "platform" of String, parameter "source" of String,
+           parameter "external_source_date" of String, parameter
+           "processing_comments" of String
         :returns: instance of type "UploadExpressionOutput" (*     Output
            from upload expression    *) -> structure: parameter "obj_ref" of
            String
@@ -274,8 +281,8 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
 
         genome_ref = self._get_genome_ref(assembly_or_genome_ref, params)
 
-        expression_levels, tpm_expression_levels = self._get_expression_levels(source_dir, 
-                                                                               genome_ref)
+        expression_levels, tpm_expression_levels = self._get_expression_levels(
+            source_dir, genome_ref, params.get(self.PARAM_IN_TRANSCRIPTS))
 
         self._gen_ctab_files(params, alignment_ref)
 

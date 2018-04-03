@@ -45,6 +45,7 @@ module ExpressionUtils {
                                             source_dir. If this field is not provided for ctab files generation,
                                             then the bam file is downloaded from the input alignment_ref */
 
+        boolean  transcripts;           /*  Optional - Produce the expression object from the transcripts */
         int      data_quality_level;    /*  Optional */
         float    original_median;       /*  Optional */
 

@@ -134,6 +134,7 @@ UploadExpressionParams is a reference to a hash where the following keys are def
 	genome_ref has a value which is a string
 	annotation_id has a value which is a string
 	bam_file_path has a value which is a string
+	transcripts has a value which is an ExpressionUtils.boolean
 	data_quality_level has a value which is an int
 	original_median has a value which is a float
 	description has a value which is a string
@@ -141,6 +142,7 @@ UploadExpressionParams is a reference to a hash where the following keys are def
 	source has a value which is a string
 	external_source_date has a value which is a string
 	processing_comments has a value which is a string
+boolean is an int
 UploadExpressionOutput is a reference to a hash where the following keys are defined:
 	obj_ref has a value which is a string
 
@@ -159,6 +161,7 @@ UploadExpressionParams is a reference to a hash where the following keys are def
 	genome_ref has a value which is a string
 	annotation_id has a value which is a string
 	bam_file_path has a value which is a string
+	transcripts has a value which is an ExpressionUtils.boolean
 	data_quality_level has a value which is an int
 	original_median has a value which is a float
 	description has a value which is a string
@@ -166,6 +169,7 @@ UploadExpressionParams is a reference to a hash where the following keys are def
 	source has a value which is a string
 	external_source_date has a value which is a string
 	processing_comments has a value which is a string
+boolean is an int
 UploadExpressionOutput is a reference to a hash where the following keys are defined:
 	obj_ref has a value which is a string
 
@@ -655,6 +659,7 @@ alignment_ref has a value which is a string
 genome_ref has a value which is a string
 annotation_id has a value which is a string
 bam_file_path has a value which is a string
+transcripts has a value which is an ExpressionUtils.boolean
 data_quality_level has a value which is an int
 original_median has a value which is a float
 description has a value which is a string
@@ -676,6 +681,7 @@ alignment_ref has a value which is a string
 genome_ref has a value which is a string
 annotation_id has a value which is a string
 bam_file_path has a value which is a string
+transcripts has a value which is an ExpressionUtils.boolean
 data_quality_level has a value which is an int
 original_median has a value which is a float
 description has a value which is a string
