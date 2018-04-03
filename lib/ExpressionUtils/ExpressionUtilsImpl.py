@@ -44,9 +44,9 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
     # state. A method could easily clobber the state set by another while
     # the latter method is running.
     ######################################### noqa
-    VERSION = "0.0.2"
-    GIT_URL = "https://github.com/Tianhao-Gu/ExpressionUtils.git"
-    GIT_COMMIT_HASH = "7d6a1cd890e2dee664dded97f2d7acded00e2f00"
+    VERSION = "0.1.1"
+    GIT_URL = "https://github.com/JamesJeffryes/ExpressionUtils.git"
+    GIT_COMMIT_HASH = "62ce653aa5c5b39a597486613bc140b173a35c99"
 
     #BEGIN_CLASS_HEADER
 
@@ -248,12 +248,13 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
            parameter "destination_ref" of String, parameter "source_dir" of
            String, parameter "alignment_ref" of String, parameter
            "genome_ref" of String, parameter "annotation_id" of String,
-           parameter "bam_file_path" of String, parameter
-           "data_quality_level" of Long, parameter "original_median" of
-           Double, parameter "description" of String, parameter "platform" of
-           String, parameter "source" of String, parameter
-           "external_source_date" of String, parameter "processing_comments"
-           of String
+           parameter "bam_file_path" of String, parameter "transcripts" of
+           type "boolean" (A boolean - 0 for false, 1 for true. @range (0,
+           1)), parameter "data_quality_level" of Long, parameter
+           "original_median" of Double, parameter "description" of String,
+           parameter "platform" of String, parameter "source" of String,
+           parameter "external_source_date" of String, parameter
+           "processing_comments" of String
         :returns: instance of type "UploadExpressionOutput" (*     Output
            from upload expression    *) -> structure: parameter "obj_ref" of
            String
