@@ -340,7 +340,7 @@ class ExpressionUtilsTest(unittest.TestCase):
 
         feature_ids += cufflinks_feature_ids
 
-        # incudes features in t_data.ctab
+        # includes features in t_data.ctab
         feature_ids += ['AT1G01010.1', 'AT1G01020.1', 'AT1G01020.2',
                         'AT1G01030.1', 'AT1G01040.1', 'AT1G01046.1']
 

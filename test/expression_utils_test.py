@@ -145,5 +145,16 @@ class GFFUtilsTest(unittest.TestCase):
 
         print(fpkm_dict, tpm_dict)
 
-        self.assertEquals(9, len(fpkm_dict))
-        self.assertEquals(9, len(tpm_dict))
+        expected_fpkm = {'MSTRG.1.1': 17.276905044091045, 'mRNA_1': 0.0,
+                         'MSTRG.1.2': 15.496161235946962, 'mRNA_3': 0.0,
+                         'MSTRG.2.2': 15.833910686877843, 'mRNA_2': 0.0,
+                         'MSTRG.2.1': 16.618558913364847,
+                         'MSTRG.3.1': 19.127090666492997, 'gene_1_mRNA': 0.0}
+        expected_tpm = {'MSTRG.1.1': 17.37137277377277, 'mRNA_3': 0.0,
+                        'MSTRG.1.2': 15.590627562938757, 'mRNA_1': 0.0,
+                        'MSTRG.2.2': 15.928377426832572, 'mRNA_2': 0.0,
+                        'MSTRG.2.1': 16.713026310072223,
+                        'MSTRG.3.1': 19.22155881227908, 'gene_1_mRNA': 0.0}
+
+        self.assertEqual(fpkm_dict, expected_fpkm)
+        self.assertEqual(tpm_dict, expected_tpm)

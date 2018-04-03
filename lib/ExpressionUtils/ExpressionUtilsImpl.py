@@ -65,6 +65,7 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
     PARAM_IN_MAPPED_SAMPLE_ID = 'mapped_sample_id'
     PARAM_IN_ORIG_MEDIAN = 'original_median'
     PARAM_IN_EXT_SRC_DATE = 'external_source_date'
+    PARAM_IN_TRANSCRIPTS = 'transcripts'
     PARAM_IN_SRC = 'source'
 
     def _check_required_param(self, in_params, param_list):
@@ -281,7 +282,7 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
         genome_ref = self._get_genome_ref(assembly_or_genome_ref, params)
 
         expression_levels, tpm_expression_levels = self._get_expression_levels(
-            source_dir, genome_ref, params.get('transcripts'))
+            source_dir, genome_ref, params.get(self.PARAM_IN_TRANSCRIPTS))
 
         self._gen_ctab_files(params, alignment_ref)
 
