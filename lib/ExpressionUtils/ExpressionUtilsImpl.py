@@ -146,15 +146,20 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
             raise ValueError('Alignment object does not contain genome_ref; "{}" parameter is required'.
                              format(self.PARAM_IN_GENOME_REF))
 
-    def _get_expression_levels(self, source_dir, genome_ref):
+    def _get_expression_levels(self, source_dir, genome_ref, transcripts=False):
 
         fpkm_file_path = os.path.join(source_dir, 'genes.fpkm_tracking')
+        if transcripts:
+            fpkm_file_path = os.path.join(source_dir, 't_data.ctab')
 
         if not os.path.isfile(fpkm_file_path):
             raise ValueError('{} file is required'.format(fpkm_file_path))
 
-        self.__LOGGER.info('Generating expression levels from {}'. format(fpkm_file_path))
-        return self.expression_utils.get_expression_levels(fpkm_file_path, genome_ref)
+        id_col = 5 if transcripts else 0
+        self.__LOGGER.info('Generating expression levels from {}'
+                           .format(fpkm_file_path))
+        return self.expression_utils.get_expression_levels(fpkm_file_path,
+                                                           genome_ref, id_col)
 
     def _gen_ctab_files(self, params, alignment_ref):
 
@@ -274,8 +279,8 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
 
         genome_ref = self._get_genome_ref(assembly_or_genome_ref, params)
 
-        expression_levels, tpm_expression_levels = self._get_expression_levels(source_dir, 
-                                                                               genome_ref)
+        expression_levels, tpm_expression_levels = self._get_expression_levels(
+            source_dir, genome_ref, params.get('transcripts'))
 
         self._gen_ctab_files(params, alignment_ref)
 

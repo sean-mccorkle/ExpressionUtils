@@ -340,6 +340,10 @@ class ExpressionUtilsTest(unittest.TestCase):
 
         feature_ids += cufflinks_feature_ids
 
+        # incudes features in t_data.ctab
+        feature_ids += ['AT1G01010.1', 'AT1G01020.1', 'AT1G01020.2',
+                        'AT1G01030.1', 'AT1G01040.1', 'AT1G01046.1']
+
         return feature_ids
 
     @classmethod
@@ -390,9 +394,17 @@ class ExpressionUtilsTest(unittest.TestCase):
                             'source_dir': cls.upload_cufflinks_dir_path,
                             'alignment_ref': cls.getWsName() + '/test_alignment_genome'
                             }
+        cls.transcript_params = {
+            'destination_ref': cls.getWsName() + '/test_transcript_expression',
+            'source_dir': cls.upload_stringtie_dir_path,
+            'alignment_ref': cls.getWsName() + '/test_alignment_genome',
+            'transcripts': 1
+            }
+
 
         cls.getImpl().upload_expression(cls.ctx, cls.stringtie_params)
         cls.getImpl().upload_expression(cls.ctx, cls.cufflinks_params)
+        cls.getImpl().upload_expression(cls.ctx, cls.transcript_params)
 
     @classmethod
     def getSize(cls, filename):
@@ -473,6 +485,10 @@ class ExpressionUtilsTest(unittest.TestCase):
                   'alignment_ref': self.getWsName() + '/test_alignment_assembly',
                   'genome_ref': self.getWsName() + '/test_genome'}
         self.upload_expression_success(params, self.uploaded_stringtie_zip)
+
+    def test_upload_stringtie_transcripts_expression_success(self):
+
+        self.upload_expression_success(self.transcript_params, self.uploaded_stringtie_zip)
 
     def test_upload_cufflinks_expression_success(self):
         self.upload_expression_success(self.cufflinks_params, self.uploaded_cufflinks_zip)
