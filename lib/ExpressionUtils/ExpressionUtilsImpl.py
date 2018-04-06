@@ -139,12 +139,14 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
     def _get_genome_ref(self, assembly_or_genome_ref, params):
 
         obj_type = self._get_ws_info(assembly_or_genome_ref)[2]
-        if obj_type.startswith('KBaseGenomes.Genome'):
-            return assembly_or_genome_ref
-        elif self.PARAM_IN_GENOME_REF in params and params[self.PARAM_IN_GENOME_REF] is not None:
+        if self.PARAM_IN_GENOME_REF in params and params[
+            self.PARAM_IN_GENOME_REF] is not None:
             return params[self.PARAM_IN_GENOME_REF]
+        elif obj_type.startswith('KBaseGenomes.Genome'):
+            return assembly_or_genome_ref
         else:
-            raise ValueError('Alignment object does not contain genome_ref; "{}" parameter is required'.
+            raise ValueError('Alignment object does not contain genome_ref; '
+                             '"{}" parameter is required'.
                              format(self.PARAM_IN_GENOME_REF))
 
     def _get_expression_levels(self, source_dir, genome_ref, transcripts=False):
