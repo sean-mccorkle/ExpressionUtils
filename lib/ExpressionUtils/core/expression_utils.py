@@ -31,6 +31,8 @@ class ExpressionUtils:
         """
         _get_feature_ids: get feature ids from genome
         """
+        self.logger.info("Matching to features from genome {}"
+                         .format(genome_ref))
 
         feature_num = self.gsu.search({'ref': genome_ref})['num_found']
 
