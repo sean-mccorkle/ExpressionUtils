@@ -283,7 +283,7 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
 
         expression_levels, tpm_expression_levels = self._get_expression_levels(
             source_dir, genome_ref, params.get(self.PARAM_IN_TRANSCRIPTS))
-
+        self.__LOGGER.info("expression_levels determined")
         self._gen_ctab_files(params, alignment_ref)
 
         uploaded_file = self.dfu.file_to_shock({'file_path': source_dir,

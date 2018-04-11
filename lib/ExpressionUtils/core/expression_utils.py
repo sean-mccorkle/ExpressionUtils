@@ -39,7 +39,7 @@ class ExpressionUtils:
         genome_features = self.gsu.search({'ref': genome_ref,
                                            'limit': feature_num,
                                            'sort_by': [['feature_id', True]]})['features']
-
+        self.logger.info("features acquired")
         features_ids = map(lambda genome_feature: genome_feature.get('feature_id'),
                            genome_features)
 
@@ -76,7 +76,7 @@ class ExpressionUtils:
             self.logger.error('Unable to find an FPKM column in the specified file: ' + str(filepath))
 
         feature_ids = self._get_feature_ids(genome_ref)
-
+        self.logger.info("ids acquired")
         sum_fpkm = 0.0
         with open(filepath) as f:
             next(f)
