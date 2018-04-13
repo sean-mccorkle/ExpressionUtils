@@ -318,7 +318,8 @@ workspace object. Once uploaded, the expression files can be downloaded onto an 
                              self.PARAM_IN_MAPPED_SAMPLE_ID,
                              self.PARAM_IN_ORIG_MEDIAN,
                              self.PARAM_IN_EXT_SRC_DATE,
-                             self.PARAM_IN_SRC
+                             self.PARAM_IN_SRC,
+                             self.PARAM_IN_TRANSCRIPTS,
                              ]
 
         for opt_param in additional_params:
