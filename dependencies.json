@@ -8,8 +8,8 @@
   "version_tag" : "release"
 }, {
   "module_name" : "GenomeAnnotationAPI",
-  "type" : "sdk",
-  "version_tag" : "release"
+  "type" : "core",
+  "file_path" : "https://raw.githubusercontent.com/kbase/genome_annotation_api/master/GenomeAnnotationAPI.spec"
 }, {
   "module_name" : "GenomeFileUtil",
   "type" : "sdk",
