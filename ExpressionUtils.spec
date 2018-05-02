@@ -112,7 +112,7 @@ module ExpressionUtils {
      } ExportOutput;
 
     /** Wrapper function for use by in-narrative downloaders to download expressions from shock **/
-
+ 
     funcdef export_expression(ExportParams params)
                      returns (ExportOutput output)
                      authentication required;
