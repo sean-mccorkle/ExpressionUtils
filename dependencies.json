@@ -4,8 +4,8 @@
   "version_tag" : "release"
 }, {
   "module_name" : "DataFileUtil",
-  "type" : "sdk",
-  "version_tag" : "release"
+  "type" : "core",
+  "file_path" : "https://raw.githubusercontent.com/kbaseapps/DataFileUtil/master/DataFileUtil.spec"
 }, {
   "module_name" : "GenomeAnnotationAPI",
   "type" : "core",

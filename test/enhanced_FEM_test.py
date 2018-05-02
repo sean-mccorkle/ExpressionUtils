@@ -4,6 +4,7 @@ import os  # noqa: F401
 import time
 import inspect
 import shutil
+import json
 
 from os import environ
 
@@ -20,6 +21,7 @@ from GenomeFileUtil.GenomeFileUtilClient import GenomeFileUtil
 from ExpressionUtils.ExpressionUtilsImpl import ExpressionUtils
 from ExpressionUtils.ExpressionUtilsServer import MethodContext
 from ExpressionUtils.authclient import KBaseAuth as _KBaseAuth
+from GenomeAnnotationAPI.GenomeAnnotationAPIClient import GenomeAnnotationAPI
 
 class ExprMatrixUtilsTest(unittest.TestCase):
     @classmethod
@@ -55,8 +57,10 @@ class ExprMatrixUtilsTest(unittest.TestCase):
         cls.serviceImpl = ExpressionUtils(cls.cfg)
         cls.scratch = cls.cfg['scratch']
         cls.callback_url = os.environ['SDK_CALLBACK_URL']
-        cls.dfu = DataFileUtil(cls.callback_url, service_ver='dev')
-        cls.dfu.ws_name_to_id(cls.wsName)
+        #cls.dfu = DataFileUtil(cls.callback_url, service_ver='dev')
+        cls.dfu = DataFileUtil( cls.callback_url )
+        cls.ws_id = cls.dfu.ws_name_to_id(cls.wsName)
+        cls.gaa = GenomeAnnotationAPI( cls.callback_url )
         cls.gfu = GenomeFileUtil(cls.callback_url)
         cls.setupdata()
 
@@ -91,6 +95,45 @@ class ExprMatrixUtilsTest(unittest.TestCase):
         #                                            'workspace_name': cls.wsName,
         #                                            'genome_name': genome_object_name
         #                                            })['genome_ref']
+
+        # 
+        # load genome first
+        #
+        genome_file_name = 'eFEM_test_genome.json'
+
+        genome_file_path = os.path.join('data', genome_file_name)
+        print "### genome file path is {0}".format( genome_file_path )
+        with open( genome_file_path ) as genome_file:  
+            genome = json.load( genome_file )
+            #print "### genome is:"
+            #pprint( genome )
+            #gen_ref = cls.dfu.save_objects( { 'id': cls.ws_id, 
+            #                                  'objects': [ {'type': 'KBaseGenomes.Genome', 'data': genome, 'name':'at'} ]
+            #                              } )
+            #print "### gen_ref is {0}".format( gen_ref )
+
+            gen_info = cls.gaa.save_one_genome_v1( { 'workspace': cls.wsName,
+                                                     'data': genome,
+                                                     'name': 'at'
+                                                 } ).get('info')
+            #print "### gen_info"
+            #pprint( gen_info )
+            gen_ref = "{0}/{1}/{2}".format( gen_info[6], gen_info[0], gen_info[4] )
+            print "### gen_ref is {0}".format( gen_ref )
+
+            #gen_ref = cls.wsClient.save_objects( {
+            #  objdata = cls.wsClient.save_objects({                                                                                  
+            #'workspace': cls.getWsName(),                                                                                      
+            #'objects': [{'type': 'Empty.AType',                                                                                
+            #             'data': {},                                                                                           
+            #             'name': 'empty'                                                                                       
+            #             }]                                                                                                    
+            #  })[0]                                                                                                                  
+
+        print "### gen_ref is again {0}".format( gen_ref )
+        
+                                                       
+        #shutil.copy(os.path.join('data', genbank_file_name), genbank_file_path)
         pass
 
     # NOTE: According to Python unittest naming rules test method names should start from 'test'. # noqa

@@ -40,7 +40,7 @@ class ExpressionUtils:
     ######################################### noqa
     VERSION = "0.1.1"
     GIT_URL = "git@github.com:sean-mccorkle/ExpressionUtils.git"
-    GIT_COMMIT_HASH = "24ad120b9b6552e4578a9a0b89c41b3d7bd6b5b6"
+    GIT_COMMIT_HASH = "612d1ca5b3c9dfa5b429e60356113d426376bace"
 
     #BEGIN_CLASS_HEADER
 
