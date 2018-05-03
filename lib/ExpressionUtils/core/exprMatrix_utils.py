@@ -1,7 +1,9 @@
 import os
 import uuid
 import re
+import numpy
 from pprint import pprint, pformat
+
 
 from Workspace.WorkspaceClient import Workspace
 from DataFileUtil.DataFileUtilClient import DataFileUtil
@@ -206,8 +208,25 @@ class ExprMatrixUtils:
                                                   '{0}_TPM_ExpressionMatrix'.format(output_obj_name))
         return fpkm_ref, tpm_ref
 
-    def get_matrix_stats( self, row ):
-        return( [ 'NA', 'NA', 'NA', 'NA', 'NA' ] )
+    def get_matrix_stats( self, raw_row ):
+
+        self.logger.info( "### gms raw row = {0}".format( pformat( raw_row ) ) )
+        has_missing = "No"
+        row = []
+        for r in raw_row:
+            if r == None or numpy.isnan( r ):     # careful here - r can be 0 which is a legitimate value
+                has_missing = "Yes"
+            else:
+                row.append(r)
+
+        if len( row ) < 1:
+            return( [ 'NA', 'NA', 'NA', 'NA', 'Yes' ] )
+        else:
+            if len( row ) == 1:
+               sd = 0
+            else:
+               sd = numpy.std( row, ddof=1 )
+            return( [ min( row ), max( row ), numpy.mean( row ), sd, has_missing ] )
 
     def get_enhancedFEM( self, params ):
 
@@ -241,6 +260,14 @@ class ExprMatrixUtils:
                                     "mean",
                                     "std_dev",
                                     "is_missing_values" ]
+        efem['data']['column_labels'] =[ "Description", 
+                                         "Fold change",
+                                         "Q value",
+                                         "Min. expression",
+                                         "Max. expression",
+                                         "Mean expression",
+                                         "Std. dev.",
+                                         "Missing values?" ]
         fm = fem.get('data')
         efem['data']['row_ids'] = fm.get('row_ids')
         efem['data']['values' ] = []
