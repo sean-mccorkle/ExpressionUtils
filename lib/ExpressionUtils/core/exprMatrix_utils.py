@@ -279,6 +279,17 @@ class ExprMatrixUtils:
         for i in range( 0, n_rows ):
             efem['data']['values'].append( [ 'NA', 'NA', 'NA' ] + self.get_matrix_stats( fvals[i] ) )
 
+        # Get genome object and feature descriptions, put those in column 1
+
+        feat_dict = self.gaa.get_feature_functions( { 'ref': fem.get( 'genome_ref' ), 'feature_id_list': None } )
+        self.logger.info( "### feat_dict = {0}".format( pformat( feat_dict ) ) )
+        for i in range( 0, n_rows ):
+            desc = feat_dict.get( efem['data']['row_ids'][i] )
+            if desc:
+                efem['data']['values'][i][0] = desc     # leave as 'NA' if no entry in feat_dict
+
+        # get DEM from provenance and merge the FC and q-values
+
 
         return efem
 
