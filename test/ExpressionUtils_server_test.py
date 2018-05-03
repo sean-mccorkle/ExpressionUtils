@@ -11,6 +11,7 @@ import glob
 from zipfile import ZipFile
 from datetime import datetime
 from distutils.dir_util import copy_tree
+from mock import patch
 
 from os import environ
 try:
@@ -32,6 +33,7 @@ from biokbase.AbstractHandle.Client import AbstractHandle as HandleService  # @U
 from ExpressionUtils.ExpressionUtilsImpl import ExpressionUtils
 from ExpressionUtils.ExpressionUtilsServer import MethodContext
 from ExpressionUtils.authclient import KBaseAuth as _KBaseAuth
+from ExpressionUtils.core.expression_utils import ExpressionUtils as Expression_Utils
 
 
 def dictmerge(x, y):
@@ -321,8 +323,31 @@ class ExpressionUtilsTest(unittest.TestCase):
         res = cls.save_ws_obj(obj, wsobjname, "KBaseRNASeq.GFFAnnotation")
         return cls.make_ref(res)
 
+    def mock_get_feature_ids(genome_ref):
+        print 'Mocking _get_feature_ids'
+
+        feature_ids = []
+        # includes feature ids in stringtie.genes.fpkm_tracking
+        stringtie_feature_ids = ['AT1G01010', 'AT1G01020', 'AT1G01030', 'AT1G01040', 'AT1G01050', 
+                                 'AT1G01060', 'AT1G01070', 'AT1G01080', 'AT1G01090', 'AT1G01100']
+
+        feature_ids += stringtie_feature_ids
+
+        # includes feature ids in cufflinks.genes.fpkm_tracking
+        cufflinks_feature_ids = ['AT1G29740', 'AT1G29730', 'RKF1', 'SEI2', 'AT1G29770',
+                                 'AT1G29775', 'AT1G29780', 'AT1G29790', 'AT1G29800', 'AT1G29810']
+
+        feature_ids += cufflinks_feature_ids
+
+        # includes features in t_data.ctab
+        feature_ids += ['AT1G01010.1', 'AT1G01020.1', 'AT1G01020.2',
+                        'AT1G01030.1', 'AT1G01040.1', 'AT1G01046.1']
+
+        return feature_ids
+
     @classmethod
-    def setupTestData(cls):
+    @patch.object(Expression_Utils, "_get_feature_ids", side_effect=mock_get_feature_ids)
+    def setupTestData(cls, _get_feature_ids):
         """
         sets up files for upload
         """
@@ -368,9 +393,17 @@ class ExpressionUtilsTest(unittest.TestCase):
                             'source_dir': cls.upload_cufflinks_dir_path,
                             'alignment_ref': cls.getWsName() + '/test_alignment_genome'
                             }
+        cls.transcript_params = {
+            'destination_ref': cls.getWsName() + '/test_transcript_expression',
+            'source_dir': cls.upload_stringtie_dir_path,
+            'alignment_ref': cls.getWsName() + '/test_alignment_genome',
+            'transcripts': 1
+            }
+
 
         cls.getImpl().upload_expression(cls.ctx, cls.stringtie_params)
         cls.getImpl().upload_expression(cls.ctx, cls.cufflinks_params)
+        cls.getImpl().upload_expression(cls.ctx, cls.transcript_params)
 
     @classmethod
     def getSize(cls, filename):
@@ -451,6 +484,10 @@ class ExpressionUtilsTest(unittest.TestCase):
                   'alignment_ref': self.getWsName() + '/test_alignment_assembly',
                   'genome_ref': self.getWsName() + '/test_genome'}
         self.upload_expression_success(params, self.uploaded_stringtie_zip)
+
+    def test_upload_stringtie_transcripts_expression_success(self):
+
+        self.upload_expression_success(self.transcript_params, self.uploaded_stringtie_zip)
 
     def test_upload_cufflinks_expression_success(self):
         self.upload_expression_success(self.cufflinks_params, self.uploaded_cufflinks_zip)

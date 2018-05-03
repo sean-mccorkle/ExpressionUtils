@@ -35,6 +35,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "genome_ref",
     "annotation_id",
     "bam_file_path",
+    "transcripts",
     "data_quality_level",
     "original_median",
     "description",
@@ -57,6 +58,8 @@ public class UploadExpressionParams {
     private String annotationId;
     @JsonProperty("bam_file_path")
     private String bamFilePath;
+    @JsonProperty("transcripts")
+    private Long transcripts;
     @JsonProperty("data_quality_level")
     private Long dataQualityLevel;
     @JsonProperty("original_median")
@@ -160,6 +163,21 @@ public class UploadExpressionParams {
 
     public UploadExpressionParams withBamFilePath(String bamFilePath) {
         this.bamFilePath = bamFilePath;
+        return this;
+    }
+
+    @JsonProperty("transcripts")
+    public Long getTranscripts() {
+        return transcripts;
+    }
+
+    @JsonProperty("transcripts")
+    public void setTranscripts(Long transcripts) {
+        this.transcripts = transcripts;
+    }
+
+    public UploadExpressionParams withTranscripts(Long transcripts) {
+        this.transcripts = transcripts;
         return this;
     }
 
@@ -280,7 +298,7 @@ public class UploadExpressionParams {
 
     @Override
     public String toString() {
-        return ((((((((((((((((((((((((((((("UploadExpressionParams"+" [destinationRef=")+ destinationRef)+", sourceDir=")+ sourceDir)+", alignmentRef=")+ alignmentRef)+", genomeRef=")+ genomeRef)+", annotationId=")+ annotationId)+", bamFilePath=")+ bamFilePath)+", dataQualityLevel=")+ dataQualityLevel)+", originalMedian=")+ originalMedian)+", description=")+ description)+", platform=")+ platform)+", source=")+ source)+", externalSourceDate=")+ externalSourceDate)+", processingComments=")+ processingComments)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((((((((((("UploadExpressionParams"+" [destinationRef=")+ destinationRef)+", sourceDir=")+ sourceDir)+", alignmentRef=")+ alignmentRef)+", genomeRef=")+ genomeRef)+", annotationId=")+ annotationId)+", bamFilePath=")+ bamFilePath)+", transcripts=")+ transcripts)+", dataQualityLevel=")+ dataQualityLevel)+", originalMedian=")+ originalMedian)+", description=")+ description)+", platform=")+ platform)+", source=")+ source)+", externalSourceDate=")+ externalSourceDate)+", processingComments=")+ processingComments)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

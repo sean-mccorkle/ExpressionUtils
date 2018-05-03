@@ -47,12 +47,13 @@ class ExpressionUtils(object):
            parameter "destination_ref" of String, parameter "source_dir" of
            String, parameter "alignment_ref" of String, parameter
            "genome_ref" of String, parameter "annotation_id" of String,
-           parameter "bam_file_path" of String, parameter
-           "data_quality_level" of Long, parameter "original_median" of
-           Double, parameter "description" of String, parameter "platform" of
-           String, parameter "source" of String, parameter
-           "external_source_date" of String, parameter "processing_comments"
-           of String
+           parameter "bam_file_path" of String, parameter "transcripts" of
+           type "boolean" (A boolean - 0 for false, 1 for true. @range (0,
+           1)), parameter "data_quality_level" of Long, parameter
+           "original_median" of Double, parameter "description" of String,
+           parameter "platform" of String, parameter "source" of String,
+           parameter "external_source_date" of String, parameter
+           "processing_comments" of String
         :returns: instance of type "UploadExpressionOutput" (*     Output
            from upload expression    *) -> structure: parameter "obj_ref" of
            String
