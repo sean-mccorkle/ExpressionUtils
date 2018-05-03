@@ -228,6 +228,24 @@ class ExprMatrixUtils:
                sd = numpy.std( row, ddof=1 )
             return( [ min( row ), max( row ), numpy.mean( row ), sd, has_missing ] )
 
+    # returns a dict that maps feature_id -> [ fc, q ]
+
+    def convert_dem_to_dict( self, dem ):
+
+        row_ids = dem.get( 'row_ids' )
+        vals = dem.get( 'values' )
+  
+        n_rows = len( row_ids )
+        if ( len( vals ) != n_rows ):
+            raise Exception( "length discrepancy in differential expression matrix: {0} row_ids but {1} values".format( n_rows, len( fvals ) ) )
+
+        dem_dict = {}
+        for i in range( 0, n_rows ):
+            dem_dict[ row_ids[i] ] = [ vals[i][0], vals[i][2] ] # [fc,q]. (not bothering to check for dups here)
+
+        return dem_dict
+
+
     def get_enhancedFEM( self, params ):
 
         if not params.get( 'fem_object_ref' ):
@@ -245,7 +263,7 @@ class ExprMatrixUtils:
         prov = fem_obj_ret.get( 'provenance')[0]
         self.logger.info( "### prov = {0}".format( pformat( prov ) ) )
 
-        # create the enhanced FEM, starting with the FEM
+        # (1) create the enhanced FEM, starting with the FEM
 
         efem = {}
         for k in [ 'genome_ref', 'scale', 'type' ]:
@@ -271,25 +289,39 @@ class ExprMatrixUtils:
         fm = fem.get('data')
         efem['data']['row_ids'] = fm.get('row_ids')
         efem['data']['values' ] = []
-        n_rows = len( efem['data']['row_ids'] )
+        n_efem_rows = len( efem['data']['row_ids'] )
         fvals = fm.get('values')
-        if ( len( fvals ) != n_rows ):
-            raise Exception( "length discrepancy in filtered expression matrix: {0} row_ids but {1} values".format( n_rows, len( fvals ) ) )
+        if ( len( fvals ) != n_efem_rows ):
+            raise Exception( "length discrepancy in filtered expression matrix: {0} row_ids but {1} values".format( n_efem_rows, len( fvals ) ) )
 
-        for i in range( 0, n_rows ):
+        for i in range( 0, n_efem_rows ):
             efem['data']['values'].append( [ 'NA', 'NA', 'NA' ] + self.get_matrix_stats( fvals[i] ) )
 
-        # Get genome object and feature descriptions, put those in column 1
+        # (2) Get genome object and feature descriptions, put those in column 1
 
         feat_dict = self.gaa.get_feature_functions( { 'ref': fem.get( 'genome_ref' ), 'feature_id_list': None } )
         self.logger.info( "### feat_dict = {0}".format( pformat( feat_dict ) ) )
-        for i in range( 0, n_rows ):
+        for i in range( 0, n_efem_rows ):
             desc = feat_dict.get( efem['data']['row_ids'][i] )
             if desc:
                 efem['data']['values'][i][0] = desc     # leave as 'NA' if no entry in feat_dict
 
-        # get DEM from provenance and merge the FC and q-values
+        # (3) get DEM from provenance and merge the FC and q-values
 
+        if prov.get( 'input_ws_objects' ):
+            dem_ref = prov.get( 'input_ws_objects' )[0]
+            dem_obj_ret = self.ws_client.get_objects2(
+                           {'objects': [{'ref': dem_ref }]})['data'][0]
+            self.logger.info( "### dem_obj_ret = {0}".format( pformat( dem_obj_ret ) ) )
+            dem = dem_obj_ret.get( 'data' )
+            self.logger.info( "### dem = {0}".format( pformat( dem ) ) )
+            
+            dem_dict = self.convert_dem_to_dict( dem.get('data') )
+            self.logger.info( "### dem_dict = {0}".format( pformat( dem_dict ) ) )
 
+            for i in range( 0, n_efem_rows ):
+                d = dem_dict.get( efem['data']['row_ids'][i] )
+                if d:
+                    efem['data']['values'][i][1], efem['data']['values'][i][2] = d
         return efem
 
