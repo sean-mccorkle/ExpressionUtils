@@ -88,7 +88,10 @@ class ExprMatrixUtilsTest(unittest.TestCase):
         genome_object_name = 'test_Genome'
         cls.genome_ref = cls.gfu.genbank_to_genome({'file': {'path': genbank_file_path},
                                                     'workspace_name': cls.wsName,
-                                                    'genome_name': genome_object_name
+                                                    'genome_name': genome_object_name,
+                                                    'source': 'Ensembl',
+                                                    'generate_ids_if_needed': 1,
+                                                    'generate_missing_genes': 1
                                                     })['genome_ref']
 
     # NOTE: According to Python unittest naming rules test method names should start from 'test'. # noqa
