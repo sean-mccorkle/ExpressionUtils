@@ -118,8 +118,8 @@ class ExprMatrixUtilsTest(unittest.TestCase):
                                                  } ).get('info')
             #print "### gen_info"
             #pprint( gen_info )
-            gen_ref = "{0}/{1}/{2}".format( gen_info[6], gen_info[0], gen_info[4] )
-            print "### gen_ref is {0}".format( gen_ref )
+            genome_ref = "{0}/{1}/{2}".format( gen_info[6], gen_info[0], gen_info[4] )
+            print "### genome_ref is {0}".format( genome_ref )
 
             #gen_ref = cls.wsClient.save_objects( {
             #  objdata = cls.wsClient.save_objects({                                                                                  
@@ -129,9 +129,60 @@ class ExprMatrixUtilsTest(unittest.TestCase):
             #             'name': 'empty'                                                                                       
             #             }]                                                                                                    
             #  })[0]                                                                                                                  
+        print "### genome_ref is again {0}".format( genome_ref )
 
-        print "### gen_ref is again {0}".format( gen_ref )
-        
+        # Read DEM test object and save
+
+        dem_file_name = "eFEM_test_dem.json"
+        dem_file_path = os.path.join('data', dem_file_name)
+        print "### dem file path is {0}".format( dem_file_path )
+        with open( dem_file_path ) as dem_file:  
+            dem = json.load( dem_file )
+            dem["genome_ref"] = genome_ref
+            print "### dem is "
+            pprint( dem )
+
+            dem_info = cls.dfu.save_objects( { 'id': cls.ws_id, 
+                                               'objects': [ {'type': 'KBaseFeatureValues.DifferentialExpressionMatrix', 
+                                                             'data': dem, 
+                                                             'name': 'dem'} ]
+                                           } )[0]
+            print "### dem_info is {0}".format( dem_info )
+            dem_ref = "{0}/{1}/{2}".format( dem_info[6], dem_info[0], dem_info[4] )
+            print "### dem_ref is {0}".format( dem_ref )
+
+        # Read FEM test object and save
+
+        fem_file_name = "eFEM_test_fem.json"
+        fem_file_path = os.path.join('data', fem_file_name)
+        print "### fem file path is {0}".format( fem_file_path )
+        with open( fem_file_path ) as fem_file:
+            fem = json.load( fem_file )
+            fem["genome_ref"] = genome_ref
+            print "### fem is "
+            pprint( fem )
+
+            # Save without DEM provenance
+
+            fem_info = cls.dfu.save_objects( { 'id': cls.ws_id, 
+                                               'objects': [ {'type': 'KBaseFeatureValues.ExpressionMatrix', 
+                                                             'data': fem, 
+                                                             'name': 'fem_no_dem_prov'} ]
+                                           } )[0]
+            print "### fem_info is {0}".format( fem_info )
+            fem_ref = "{0}/{1}/{2}".format( fem_info[6], fem_info[0], fem_info[4] )
+            print "### fem_ref is {0}".format( fem_ref )
+
+            # Save with DEM provenance
+
+            fem_info = cls.dfu.save_objects( { 'id': cls.ws_id, 
+                                               'objects': [ {'type': 'KBaseFeatureValues.ExpressionMatrix', 
+                                                             'data': fem, 
+                                                             'name': 'fem',
+                                                             'extra_provenance_input_refs': [dem_ref]
+                                                          } ]
+                                           } )[0]
+            print "### fem_ref with prov is {0}".format( fem_ref )
                                                        
         #shutil.copy(os.path.join('data', genbank_file_name), genbank_file_path)
         pass
@@ -141,6 +192,7 @@ class ExprMatrixUtilsTest(unittest.TestCase):
     def get_enhancedFEM_test( self ):
         print "### enhancedFEM_Test - yay" 
         pass
+
 
 #    def get_expr_matrix_success(self, input_exprset_ref, output_obj_name):
 #
