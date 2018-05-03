@@ -179,7 +179,7 @@ class ExprMatrixUtilsTest(unittest.TestCase):
         print "### self.fem_prov_ref {0}".format( self.fem_prov_ref )
 
         ret = self.getImpl().get_enhancedFilteredExpressionMatrix( self.ctx, 
-                                                            {'fem_object_ref': self.fem_no_prov_ref} )
+                                                            {'fem_object_ref': self.fem_prov_ref} )
         pprint( ret )
         pass
 

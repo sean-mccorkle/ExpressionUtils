@@ -206,12 +206,52 @@ class ExprMatrixUtils:
                                                   '{0}_TPM_ExpressionMatrix'.format(output_obj_name))
         return fpkm_ref, tpm_ref
 
+    def get_matrix_stats( self, row ):
+        return( [ 'NA', 'NA', 'NA', 'NA', 'NA' ] )
+
     def get_enhancedFEM( self, params ):
 
         if not params.get( 'fem_object_ref' ):
             raise Exception( "fem_object_ref parameter not given to get_enhancedFilteredExpressionMatrix" )
 
-        self.logger.info( "### hello from get_enhancedFilteredExpressionMatrix" )
+        fem_object_ref = params.get( 'fem_object_ref' )
+        self.logger.info( 
+            "### get_enhancedFilteredExpressionMatrix, fem_object_ref = {0}".format( fem_object_ref) )
 
-        return "this will be an eFEM soon!"
+        fem_obj_ret = self.ws_client.get_objects2(
+                       {'objects': [{'ref': fem_object_ref }]})['data'][0]
+        self.logger.info( "### fem_obj_ret = {0}".format( pformat( fem_obj_ret ) ) )
+        fem = fem_obj_ret.get( 'data' )
+        self.logger.info( "### fem = {0}".format( pformat( fem ) ) )
+        prov = fem_obj_ret.get( 'provenance')[0]
+        self.logger.info( "### prov = {0}".format( pformat( prov ) ) )
+
+        # create the enhanced FEM, starting with the FEM
+
+        efem = {}
+        for k in [ 'genome_ref', 'scale', 'type' ]:
+            efem[k] = fem.get( k )
+
+        efem['data'] = {}
+        efem['data']['col_ids'] = [ "description", 
+                                    "fold-change",
+                                    "q-value",
+                                    "min",
+                                    "max",
+                                    "mean",
+                                    "std_dev",
+                                    "is_missing_values" ]
+        fm = fem.get('data')
+        efem['data']['row_ids'] = fm.get('row_ids')
+        efem['data']['values' ] = []
+        n_rows = len( efem['data']['row_ids'] )
+        fvals = fm.get('values')
+        if ( len( fvals ) != n_rows ):
+            raise Exception( "length discrepancy in filtered expression matrix: {0} row_ids but {1} values".format( n_rows, len( fvals ) ) )
+
+        for i in range( 0, n_rows ):
+            efem['data']['values'].append( [ 'NA', 'NA', 'NA' ] + self.get_matrix_stats( fvals[i] ) )
+
+
+        return efem
 
