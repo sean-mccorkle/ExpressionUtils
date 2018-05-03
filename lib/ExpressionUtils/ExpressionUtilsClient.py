@@ -111,18 +111,18 @@ class ExpressionUtils(object):
             'ExpressionUtils.get_expressionMatrix',
             [params], self._service_ver, context)
 
-    def get_enhancedFilteredExpressionMatrix(self, getEnhancedFEMParams, context=None):
+    def get_enhancedFilteredExpressionMatrix(self, params, context=None):
         """
-        :param getEnhancedFEMParams: instance of type "getEnhancedFEMParams"
-           (* Input parameters and method for getting the enhanced Filtered
-           Expresion Matrix for viewing *) -> structure: parameter
-           "fem_object_ref" of String
+        :param params: instance of type "getEnhancedFEMParams" (* Input
+           parameters and method for getting the enhanced Filtered Expresion
+           Matrix for viewing *) -> structure: parameter "fem_object_ref" of
+           String
         :returns: instance of type "getEnhancedFEMOutput" -> structure:
-           parameter "efem" of type "ExpressionMatrix" (A wrapper around a
-           FloatMatrix2D designed for simple matricies of Expression data. 
-           Rows map to features, and columns map to conditions.  The data
-           type includes some information about normalization factors and
-           contains mappings from row ids to features and col ids to
+           parameter "enhanced_FEM" of type "ExpressionMatrix" (A wrapper
+           around a FloatMatrix2D designed for simple matricies of Expression
+           data.  Rows map to features, and columns map to conditions.  The
+           data type includes some information about normalization factors
+           and contains mappings from row ids to features and col ids to
            conditions. description - short optional description of the
            dataset type - ? level, ratio, log-ratio scale - ? probably: raw,
            ln, log2, log10 col_normalization - mean_center, median_center,
@@ -171,7 +171,7 @@ class ExpressionUtils(object):
         """
         return self._client.call_method(
             'ExpressionUtils.get_enhancedFilteredExpressionMatrix',
-            [getEnhancedFEMParams], self._service_ver, context)
+            [params], self._service_ver, context)
 
     def status(self, context=None):
         return self._client.call_method('ExpressionUtils.status',

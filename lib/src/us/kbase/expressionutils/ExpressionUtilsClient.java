@@ -236,14 +236,14 @@ public class ExpressionUtilsClient {
      * <p>Original spec-file function name: get_enhancedFilteredExpressionMatrix</p>
      * <pre>
      * </pre>
-     * @param   arg1   instance of type {@link us.kbase.expressionutils.GetEnhancedFEMParams GetEnhancedFEMParams} (original type "getEnhancedFEMParams")
+     * @param   params   instance of type {@link us.kbase.expressionutils.GetEnhancedFEMParams GetEnhancedFEMParams} (original type "getEnhancedFEMParams")
      * @return   instance of type {@link us.kbase.expressionutils.GetEnhancedFEMOutput GetEnhancedFEMOutput} (original type "getEnhancedFEMOutput")
      * @throws IOException if an IO exception occurs
      * @throws JsonClientException if a JSON RPC exception occurs
      */
-    public GetEnhancedFEMOutput getEnhancedFilteredExpressionMatrix(GetEnhancedFEMParams arg1, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+    public GetEnhancedFEMOutput getEnhancedFilteredExpressionMatrix(GetEnhancedFEMParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
         List<Object> args = new ArrayList<Object>();
-        args.add(arg1);
+        args.add(params);
         TypeReference<List<GetEnhancedFEMOutput>> retType = new TypeReference<List<GetEnhancedFEMOutput>>() {};
         List<GetEnhancedFEMOutput> res = caller.jsonrpcCall("ExpressionUtils.get_enhancedFilteredExpressionMatrix", args, retType, true, true, jsonRpcContext, this.serviceVersion);
         return res.get(0);

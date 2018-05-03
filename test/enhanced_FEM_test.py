@@ -84,42 +84,23 @@ class ExprMatrixUtilsTest(unittest.TestCase):
 
     @classmethod
     def setupdata(cls):
-        # upload genome object
-
-        #genbank_file_name = 'minimal.gbff'
-        #genbank_file_path = os.path.join(cls.scratch, genbank_file_name)
-        #shutil.copy(os.path.join('data', genbank_file_name), genbank_file_path)
-
-        #genome_object_name = 'test_Genome'
-        #cls.genome_ref = cls.gfu.genbank_to_genome({'file': {'path': genbank_file_path},
-        #                                            'workspace_name': cls.wsName,
-        #                                            'genome_name': genome_object_name
-        #                                            })['genome_ref']
 
         # 
         # load genome first
         #
         genome_file_name = 'eFEM_test_genome.json'
-
         genome_file_path = os.path.join('data', genome_file_name)
         print "### genome file path is {0}".format( genome_file_path )
+
         with open( genome_file_path ) as genome_file:  
             genome = json.load( genome_file )
-            #print "### genome is:"
-            #pprint( genome )
-            #gen_ref = cls.dfu.save_objects( { 'id': cls.ws_id, 
-            #                                  'objects': [ {'type': 'KBaseGenomes.Genome', 'data': genome, 'name':'at'} ]
-            #                              } )
-            #print "### gen_ref is {0}".format( gen_ref )
 
             gen_info = cls.gaa.save_one_genome_v1( { 'workspace': cls.wsName,
                                                      'data': genome,
                                                      'name': 'at'
                                                  } ).get('info')
-            #print "### gen_info"
-            #pprint( gen_info )
-            genome_ref = "{0}/{1}/{2}".format( gen_info[6], gen_info[0], gen_info[4] )
-            print "### genome_ref is {0}".format( genome_ref )
+            cls.genome_ref = "{0}/{1}/{2}".format( gen_info[6], gen_info[0], gen_info[4] )
+            print "### genome_ref is {0}".format( cls.genome_ref )
 
             #gen_ref = cls.wsClient.save_objects( {
             #  objdata = cls.wsClient.save_objects({                                                                                  
@@ -129,7 +110,7 @@ class ExprMatrixUtilsTest(unittest.TestCase):
             #             'name': 'empty'                                                                                       
             #             }]                                                                                                    
             #  })[0]                                                                                                                  
-        print "### genome_ref is again {0}".format( genome_ref )
+        print "### genome_ref is again {0}".format( cls.genome_ref )
 
         # Read DEM test object and save
 
@@ -138,7 +119,7 @@ class ExprMatrixUtilsTest(unittest.TestCase):
         print "### dem file path is {0}".format( dem_file_path )
         with open( dem_file_path ) as dem_file:  
             dem = json.load( dem_file )
-            dem["genome_ref"] = genome_ref
+            dem["genome_ref"] = cls.genome_ref
             print "### dem is "
             pprint( dem )
 
@@ -148,8 +129,8 @@ class ExprMatrixUtilsTest(unittest.TestCase):
                                                              'name': 'dem'} ]
                                            } )[0]
             print "### dem_info is {0}".format( dem_info )
-            dem_ref = "{0}/{1}/{2}".format( dem_info[6], dem_info[0], dem_info[4] )
-            print "### dem_ref is {0}".format( dem_ref )
+            cls.dem_ref = "{0}/{1}/{2}".format( dem_info[6], dem_info[0], dem_info[4] )
+            print "### dem_ref is {0}".format( cls.dem_ref )
 
         # Read FEM test object and save
 
@@ -158,7 +139,7 @@ class ExprMatrixUtilsTest(unittest.TestCase):
         print "### fem file path is {0}".format( fem_file_path )
         with open( fem_file_path ) as fem_file:
             fem = json.load( fem_file )
-            fem["genome_ref"] = genome_ref
+            fem["genome_ref"] = cls.genome_ref
             print "### fem is "
             pprint( fem )
 
@@ -170,8 +151,8 @@ class ExprMatrixUtilsTest(unittest.TestCase):
                                                              'name': 'fem_no_dem_prov'} ]
                                            } )[0]
             print "### fem_info is {0}".format( fem_info )
-            fem_ref = "{0}/{1}/{2}".format( fem_info[6], fem_info[0], fem_info[4] )
-            print "### fem_ref is {0}".format( fem_ref )
+            cls.fem_no_prov_ref = "{0}/{1}/{2}".format( fem_info[6], fem_info[0], fem_info[4] )
+            print "### fem_no_prov_ref is {0}".format( cls.fem_no_prov_ref )
 
             # Save with DEM provenance
 
@@ -179,10 +160,11 @@ class ExprMatrixUtilsTest(unittest.TestCase):
                                                'objects': [ {'type': 'KBaseFeatureValues.ExpressionMatrix', 
                                                              'data': fem, 
                                                              'name': 'fem',
-                                                             'extra_provenance_input_refs': [dem_ref]
+                                                             'extra_provenance_input_refs': [cls.dem_ref]
                                                           } ]
                                            } )[0]
-            print "### fem_ref with prov is {0}".format( fem_ref )
+            cls.fem_prov_ref = "{0}/{1}/{2}".format( fem_info[6], fem_info[0], fem_info[4] )
+            print "### fem_prov_ref is {0}".format( cls.fem_prov_ref )
                                                        
         #shutil.copy(os.path.join('data', genbank_file_name), genbank_file_path)
         pass
@@ -191,6 +173,14 @@ class ExprMatrixUtilsTest(unittest.TestCase):
 
     def get_enhancedFEM_test( self ):
         print "### enhancedFEM_Test - yay" 
+        print "### self.genome_ref {0}".format( self.genome_ref )
+        print "### self.dem_ref {0}".format( self.dem_ref )
+        print "### self.fem_no_prov_ref {0}".format( self.fem_no_prov_ref )
+        print "### self.fem_prov_ref {0}".format( self.fem_prov_ref )
+
+        ret = self.getImpl().get_enhancedFilteredExpressionMatrix( self.ctx, 
+                                                            {'fem_object_ref': self.fem_no_prov_ref} )
+        pprint( ret )
         pass
 
 
@@ -262,7 +252,7 @@ class ExprMatrixUtilsTest(unittest.TestCase):
 #
 #
 #    def fail_getExprMat(self, params, error, exception=ValueError, do_startswith=False):
-#
+
 #        test_name = inspect.stack()[1][3]
 #        print('\n*** starting expected get Expression Matrix fail test: ' + test_name + ' **********************')
 #

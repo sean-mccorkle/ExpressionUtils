@@ -154,11 +154,11 @@ module ExpressionUtils {
     } getEnhancedFEMParams;
 
     typedef structure {
-        KBaseFeatureValues.ExpressionMatrix  efem;
+        KBaseFeatureValues.ExpressionMatrix  enhanced_FEM;
     } getEnhancedFEMOutput;
 
 
-    funcdef  get_enhancedFilteredExpressionMatrix( getEnhancedFEMParams )
+    funcdef  get_enhancedFilteredExpressionMatrix( getEnhancedFEMParams params )
                                    returns (getEnhancedFEMOutput)
                                    authentication required;
                                     

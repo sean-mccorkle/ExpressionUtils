@@ -504,7 +504,7 @@ getExprMatrixOutput is a reference to a hash where the following keys are define
 
 =head2 get_enhancedFilteredExpressionMatrix
 
-  $return = $obj->get_enhancedFilteredExpressionMatrix($getEnhancedFEMParams)
+  $return = $obj->get_enhancedFilteredExpressionMatrix($params)
 
 =over 4
 
@@ -513,12 +513,12 @@ getExprMatrixOutput is a reference to a hash where the following keys are define
 =begin html
 
 <pre>
-$getEnhancedFEMParams is an ExpressionUtils.getEnhancedFEMParams
+$params is an ExpressionUtils.getEnhancedFEMParams
 $return is an ExpressionUtils.getEnhancedFEMOutput
 getEnhancedFEMParams is a reference to a hash where the following keys are defined:
 	fem_object_ref has a value which is a string
 getEnhancedFEMOutput is a reference to a hash where the following keys are defined:
-	efem has a value which is a KBaseFeatureValues.ExpressionMatrix
+	enhanced_FEM has a value which is a KBaseFeatureValues.ExpressionMatrix
 ExpressionMatrix is a reference to a hash where the following keys are defined:
 	description has a value which is a string
 	type has a value which is a string
@@ -553,12 +553,12 @@ boolean is an int
 
 =begin text
 
-$getEnhancedFEMParams is an ExpressionUtils.getEnhancedFEMParams
+$params is an ExpressionUtils.getEnhancedFEMParams
 $return is an ExpressionUtils.getEnhancedFEMOutput
 getEnhancedFEMParams is a reference to a hash where the following keys are defined:
 	fem_object_ref has a value which is a string
 getEnhancedFEMOutput is a reference to a hash where the following keys are defined:
-	efem has a value which is a KBaseFeatureValues.ExpressionMatrix
+	enhanced_FEM has a value which is a KBaseFeatureValues.ExpressionMatrix
 ExpressionMatrix is a reference to a hash where the following keys are defined:
 	description has a value which is a string
 	type has a value which is a string
@@ -610,10 +610,10 @@ boolean is an int
 							       "Invalid argument count for function get_enhancedFilteredExpressionMatrix (received $n, expecting 1)");
     }
     {
-	my($getEnhancedFEMParams) = @args;
+	my($params) = @args;
 
 	my @_bad_arguments;
-        (ref($getEnhancedFEMParams) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"getEnhancedFEMParams\" (value was \"$getEnhancedFEMParams\")");
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
         if (@_bad_arguments) {
 	    my $msg = "Invalid arguments passed to get_enhancedFilteredExpressionMatrix:\n" . join("", map { "\t$_\n" } @_bad_arguments);
 	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
@@ -1141,7 +1141,7 @@ fem_object_ref has a value which is a string
 
 <pre>
 a reference to a hash where the following keys are defined:
-efem has a value which is a KBaseFeatureValues.ExpressionMatrix
+enhanced_FEM has a value which is a KBaseFeatureValues.ExpressionMatrix
 
 </pre>
 
@@ -1150,7 +1150,7 @@ efem has a value which is a KBaseFeatureValues.ExpressionMatrix
 =begin text
 
 a reference to a hash where the following keys are defined:
-efem has a value which is a KBaseFeatureValues.ExpressionMatrix
+enhanced_FEM has a value which is a KBaseFeatureValues.ExpressionMatrix
 
 
 =end text

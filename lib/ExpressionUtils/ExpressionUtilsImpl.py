@@ -40,7 +40,7 @@ class ExpressionUtils:
     ######################################### noqa
     VERSION = "0.1.1"
     GIT_URL = "git@github.com:sean-mccorkle/ExpressionUtils.git"
-    GIT_COMMIT_HASH = "612d1ca5b3c9dfa5b429e60356113d426376bace"
+    GIT_COMMIT_HASH = "85e8a8e7cb5bbf3b3cae035317de3947afca154a"
 
     #BEGIN_CLASS_HEADER
 
@@ -476,18 +476,18 @@ class ExpressionUtils:
         # return the results
         return [returnVal]
 
-    def get_enhancedFilteredExpressionMatrix(self, ctx, getEnhancedFEMParams):
+    def get_enhancedFilteredExpressionMatrix(self, ctx, params):
         """
-        :param getEnhancedFEMParams: instance of type "getEnhancedFEMParams"
-           (* Input parameters and method for getting the enhanced Filtered
-           Expresion Matrix for viewing *) -> structure: parameter
-           "fem_object_ref" of String
+        :param params: instance of type "getEnhancedFEMParams" (* Input
+           parameters and method for getting the enhanced Filtered Expresion
+           Matrix for viewing *) -> structure: parameter "fem_object_ref" of
+           String
         :returns: instance of type "getEnhancedFEMOutput" -> structure:
-           parameter "efem" of type "ExpressionMatrix" (A wrapper around a
-           FloatMatrix2D designed for simple matricies of Expression data. 
-           Rows map to features, and columns map to conditions.  The data
-           type includes some information about normalization factors and
-           contains mappings from row ids to features and col ids to
+           parameter "enhanced_FEM" of type "ExpressionMatrix" (A wrapper
+           around a FloatMatrix2D designed for simple matricies of Expression
+           data.  Rows map to features, and columns map to conditions.  The
+           data type includes some information about normalization factors
+           and contains mappings from row ids to features and col ids to
            conditions. description - short optional description of the
            dataset type - ? level, ratio, log-ratio scale - ? probably: raw,
            ln, log2, log10 col_normalization - mean_center, median_center,
@@ -537,6 +537,11 @@ class ExpressionUtils:
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN get_enhancedFilteredExpressionMatrix
+
+        efem = self.expr_matrix_utils.get_enhancedFEM( params )
+
+        returnVal = { 'enhanced_FEM': efem }
+
         #END get_enhancedFilteredExpressionMatrix
 
         # At some point might do deeper type checking...

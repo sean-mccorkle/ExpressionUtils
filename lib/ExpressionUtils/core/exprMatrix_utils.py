@@ -205,3 +205,13 @@ class ExprMatrixUtils:
                                                   expr_set_data,
                                                   '{0}_TPM_ExpressionMatrix'.format(output_obj_name))
         return fpkm_ref, tpm_ref
+
+    def get_enhancedFEM( self, params ):
+
+        if not params.get( 'fem_object_ref' ):
+            raise Exception( "fem_object_ref parameter not given to get_enhancedFilteredExpressionMatrix" )
+
+        self.logger.info( "### hello from get_enhancedFilteredExpressionMatrix" )
+
+        return "this will be an eFEM soon!"
+

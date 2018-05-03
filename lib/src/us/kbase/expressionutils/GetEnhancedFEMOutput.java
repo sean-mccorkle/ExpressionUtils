@@ -20,7 +20,7 @@ import us.kbase.kbasefeaturevalues.ExpressionMatrix;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("com.googlecode.jsonschema2pojo")
 @JsonPropertyOrder({
-    "efem"
+    "enhanced_FEM"
 })
 public class GetEnhancedFEMOutput {
 
@@ -53,8 +53,8 @@ public class GetEnhancedFEMOutput {
      * </pre>
      * 
      */
-    @JsonProperty("efem")
-    private ExpressionMatrix efem;
+    @JsonProperty("enhanced_FEM")
+    private ExpressionMatrix enhancedFEM;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
@@ -86,9 +86,9 @@ public class GetEnhancedFEMOutput {
      * </pre>
      * 
      */
-    @JsonProperty("efem")
-    public ExpressionMatrix getEfem() {
-        return efem;
+    @JsonProperty("enhanced_FEM")
+    public ExpressionMatrix getEnhancedFEM() {
+        return enhancedFEM;
     }
 
     /**
@@ -120,13 +120,13 @@ public class GetEnhancedFEMOutput {
      * </pre>
      * 
      */
-    @JsonProperty("efem")
-    public void setEfem(ExpressionMatrix efem) {
-        this.efem = efem;
+    @JsonProperty("enhanced_FEM")
+    public void setEnhancedFEM(ExpressionMatrix enhancedFEM) {
+        this.enhancedFEM = enhancedFEM;
     }
 
-    public GetEnhancedFEMOutput withEfem(ExpressionMatrix efem) {
-        this.efem = efem;
+    public GetEnhancedFEMOutput withEnhancedFEM(ExpressionMatrix enhancedFEM) {
+        this.enhancedFEM = enhancedFEM;
         return this;
     }
 
@@ -142,7 +142,7 @@ public class GetEnhancedFEMOutput {
 
     @Override
     public String toString() {
-        return ((((("GetEnhancedFEMOutput"+" [efem=")+ efem)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((("GetEnhancedFEMOutput"+" [enhancedFEM=")+ enhancedFEM)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }
