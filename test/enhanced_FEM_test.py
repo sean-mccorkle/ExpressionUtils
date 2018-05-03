@@ -90,7 +90,6 @@ class ExprMatrixUtilsTest(unittest.TestCase):
         #
         genome_file_name = 'eFEM_test_genome.json'
         genome_file_path = os.path.join('data', genome_file_name)
-        print "### genome file path is {0}".format( genome_file_path )
 
         with open( genome_file_path ) as genome_file:  
             genome = json.load( genome_file )
@@ -100,48 +99,29 @@ class ExprMatrixUtilsTest(unittest.TestCase):
                                                      'name': 'at'
                                                  } ).get('info')
             cls.genome_ref = "{0}/{1}/{2}".format( gen_info[6], gen_info[0], gen_info[4] )
-            print "### genome_ref is {0}".format( cls.genome_ref )
-
-            #gen_ref = cls.wsClient.save_objects( {
-            #  objdata = cls.wsClient.save_objects({                                                                                  
-            #'workspace': cls.getWsName(),                                                                                      
-            #'objects': [{'type': 'Empty.AType',                                                                                
-            #             'data': {},                                                                                           
-            #             'name': 'empty'                                                                                       
-            #             }]                                                                                                    
-            #  })[0]                                                                                                                  
-        print "### genome_ref is again {0}".format( cls.genome_ref )
 
         # Read DEM test object and save
 
         dem_file_name = "eFEM_test_dem.json"
         dem_file_path = os.path.join('data', dem_file_name)
-        print "### dem file path is {0}".format( dem_file_path )
         with open( dem_file_path ) as dem_file:  
             dem = json.load( dem_file )
             dem["genome_ref"] = cls.genome_ref
-            print "### dem is "
-            pprint( dem )
 
             dem_info = cls.dfu.save_objects( { 'id': cls.ws_id, 
                                                'objects': [ {'type': 'KBaseFeatureValues.DifferentialExpressionMatrix', 
                                                              'data': dem, 
                                                              'name': 'dem'} ]
                                            } )[0]
-            print "### dem_info is {0}".format( dem_info )
             cls.dem_ref = "{0}/{1}/{2}".format( dem_info[6], dem_info[0], dem_info[4] )
-            print "### dem_ref is {0}".format( cls.dem_ref )
 
         # Read FEM test object and save
 
         fem_file_name = "eFEM_test_fem.json"
         fem_file_path = os.path.join('data', fem_file_name)
-        print "### fem file path is {0}".format( fem_file_path )
         with open( fem_file_path ) as fem_file:
             fem = json.load( fem_file )
             fem["genome_ref"] = cls.genome_ref
-            print "### fem is "
-            pprint( fem )
 
             # Save without DEM provenance
 
@@ -150,9 +130,7 @@ class ExprMatrixUtilsTest(unittest.TestCase):
                                                              'data': fem, 
                                                              'name': 'fem_no_dem_prov'} ]
                                            } )[0]
-            print "### fem_info is {0}".format( fem_info )
             cls.fem_no_prov_ref = "{0}/{1}/{2}".format( fem_info[6], fem_info[0], fem_info[4] )
-            print "### fem_no_prov_ref is {0}".format( cls.fem_no_prov_ref )
 
             # Save with DEM provenance
 
@@ -164,24 +142,29 @@ class ExprMatrixUtilsTest(unittest.TestCase):
                                                           } ]
                                            } )[0]
             cls.fem_prov_ref = "{0}/{1}/{2}".format( fem_info[6], fem_info[0], fem_info[4] )
-            print "### fem_prov_ref is {0}".format( cls.fem_prov_ref )
-                                                       
-        #shutil.copy(os.path.join('data', genbank_file_name), genbank_file_path)
-        pass
+
 
     # NOTE: According to Python unittest naming rules test method names should start from 'test'. # noqa
 
-    def get_enhancedFEM_test( self ):
-        print "### enhancedFEM_Test - yay" 
-        print "### self.genome_ref {0}".format( self.genome_ref )
-        print "### self.dem_ref {0}".format( self.dem_ref )
-        print "### self.fem_no_prov_ref {0}".format( self.fem_no_prov_ref )
-        print "### self.fem_prov_ref {0}".format( self.fem_prov_ref )
+    def get_enhancedFEM_tests( self ):
 
+
+        # this should succeed - good provendance link to DEM
+        
         ret = self.getImpl().get_enhancedFilteredExpressionMatrix( self.ctx, 
                                                             {'fem_object_ref': self.fem_prov_ref} )
-        pprint( ret )
-        pass
+
+        # this should succeed - no provedance link to DEM
+
+        ret = self.getImpl().get_enhancedFilteredExpressionMatrix( self.ctx, 
+                                                            {'fem_object_ref': self.fem_no_prov_ref} )
+
+        # this should fail: the one input parameter is missing..
+
+        with self.assertRaisesRegexp(
+                      ValueError, 'fem_object_ref parameter not given to get_enhancedFilteredExpressionMatrix' ):
+             self.getImpl().get_enhancedFilteredExpressionMatrix( self.ctx, 
+                                                            {'nope': 'nope'} )
 
 
 #    def get_expr_matrix_success(self, input_exprset_ref, output_obj_name):
@@ -240,6 +223,24 @@ class ExprMatrixUtilsTest(unittest.TestCase):
 #
 #        self.get_expr_matrix_success(appdev_rnaseq_exprset_obj_ref, 'ci_rnaseq_exprset_exprmat_output')
 #
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #    @unittest.skip("skipped test_get_expr_matrix_setapi_exprset_success")
 #    def test_get_expr_matrix_setapi_exprset_success(self):
 #
