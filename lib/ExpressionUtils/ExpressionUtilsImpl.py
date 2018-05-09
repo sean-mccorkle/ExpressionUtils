@@ -38,9 +38,9 @@ class ExpressionUtils:
     # state. A method could easily clobber the state set by another while
     # the latter method is running.
     ######################################### noqa
-    VERSION = "0.1.1"
+    VERSION = "0.1.2"
     GIT_URL = "git@github.com:sean-mccorkle/ExpressionUtils.git"
-    GIT_COMMIT_HASH = "b87b44fd22dabe37ab25219ace8af1831b77f56b"
+    GIT_COMMIT_HASH = "d18d7ff875c006e2b6cb6a3888a3e8d507e3269d"
 
     #BEGIN_CLASS_HEADER
 

@@ -35,7 +35,6 @@ class ExprMatrixUtilsTest(unittest.TestCase):
             cls.cfg[nameval[0]] = nameval[1]
         # Getting username from Auth profile for token
         authServiceUrl = cls.cfg['auth-service-url']
-        # authServiceUrlAllowInsecure = cls.cfg['auth_service_url_allow_insecure']
         auth_client = _KBaseAuth(authServiceUrl)
         user_id = auth_client.get_user(token)
         # WARNING: don't call any logging methods on the context object,
@@ -57,7 +56,6 @@ class ExprMatrixUtilsTest(unittest.TestCase):
         cls.serviceImpl = ExpressionUtils(cls.cfg)
         cls.scratch = cls.cfg['scratch']
         cls.callback_url = os.environ['SDK_CALLBACK_URL']
-        #cls.dfu = DataFileUtil(cls.callback_url, service_ver='dev')
         cls.dfu = DataFileUtil( cls.callback_url )
         cls.ws_id = cls.dfu.ws_name_to_id(cls.wsName)
         cls.gaa = GenomeAnnotationAPI( cls.callback_url )
