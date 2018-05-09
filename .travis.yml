@@ -1,68 +1,29 @@
 language: python
-
-python:
-- '2.7'
-
+python: '2.7'
 sudo: required
-
 services:
 - docker
-
 notifications:
   email:
     recipients:
-    - umaganapathyswork@gmail.com
+    - ganapathy@bnl.gov
     on_success: never
     on_failure: always
-
-env:
-  global:
-    secure: fDKhwqwQr5BNKAe0crylHKDyxh1OPoSoMHgq1hb0P7IzGJvg/kDv99nv294itvUPxMg5htOevyAhzlRf6cp3QFgIJ+lmQaHMTmY/p+nQ4w7J0crqmL8/YX1QmUqq8DjD8QJvl/8IJmmX4n5v3x4hMe0k6gRgro/GGy6zPMrLNOn7PHxdlSh08Uz5dO8vpqNR1K9STdkDGgr6BiICv7fbc5eJSH1/rNwZc/HcjKQIoO1hORfoLLcpoJ3c+NJ8P/6OJ3j1bRonHNhvbZc590om5aLBB0Fo9c3t9NgdHUxQKiHeH6t5doHsukanAz+onUmhaMEOMezK6Vkk2VeKHHT7esm6zMp+ykFMRmitNbcQ2qpCuK6ou7x+0AvMtOpyteijBzbVfAfdua2gM5wBaxMRXuZh2afmXtCZaytuV7xUo7wMyKnspco1ul/qyKLmXUdzPL0ct/l4nwhZSC+3DwTBTGZackmKYeT5Tn3Ddy/gjh9rX9sUt+nnHjFKl2SEVQu3cxJA3UDkoLXzoineBGXggsy9puST6+Sd/sF+Js9dy1iOdCB7gLu5C2VgXJ7KU1yakPAP0CDE+TWLvej+xALHYwDinpTWBbXjk1rTysb04DaNNk4TtM9t6YSyzgwvq140faWZPP+BwNVo/mFO8k8BhWl7uzRqEhAS9uTnXsQMIaM=
-
 branches:
   only:
   - master
-
 before_install:
 - docker version
 - python --version
 - javac -version
 - java -version
-
 install:
 - pip install coveralls
 - git clone https://github.com/kbase/jars
 - git clone https://github.com/kbase/kb_sdk
 - cd kb_sdk
 - make
-- make sdkbase
-- docker images
 - export PATH=$(pwd)/bin:$PATH
 - cd ../
-- git clone https://github.com/kbaseapps/ExpressionUtils.git
-- cd ExpressionUtils
-- kb-sdk test || true
-- sed -i "s/test_token=/test_token=$TEST_TOKEN/" test_local/test.cfg
-- sed -i 's\https://appdev.kbase.us/services\https://ci.kbase.us/services\' test_local/test.cfg
-- sed -i 's\https://appdev.kbase.us/services/auth/api/legacy/KBase/Sessions/Login\https://ci.kbase.us/services/auth/api/legacy/KBase/Sessions/Login\'
-  test_local/test.cfg
-- sed -i 's/$(id -u)/0:0/' test_local/run_tests.sh
-- pwd=$(pwd)
-- echo "#!/bin/bash" >> test_local/run_subjob.sh
-- echo -e "$pwd/test_local/run_docker.sh run --rm --user 0:0 -v $pwd/test_local/subjobs/\$1/workdir:/kb/module/work
-  -v $pwd/test_local/workdir/tmp:/kb/module/work/tmp \$4 -e \"SDK_CALLBACK_URL=\$3\"
-  \$2 async" >> test_local/run_subjob.sh
-- cat test_local/run_subjob.sh
-
 script:
-- kb-sdk test
-
-after_success:
-- cp test_local/workdir/.coverage .
-- sudo mkdir -p /kb/module/lib/
-- sudo cp -R test_local/workdir/kb/module/lib/ExpressionUtils /kb/module/lib/
-- pwd
-- ls -l /kb/module/lib/ExpressionUtils
-- cat .coverage
-- coverage report -m
-- coveralls
+- kb-sdk validate

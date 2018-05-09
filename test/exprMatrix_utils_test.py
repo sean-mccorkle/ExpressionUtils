@@ -55,8 +55,7 @@ class ExprMatrixUtilsTest(unittest.TestCase):
         cls.serviceImpl = ExpressionUtils(cls.cfg)
         cls.scratch = cls.cfg['scratch']
         cls.callback_url = os.environ['SDK_CALLBACK_URL']
-        cls.dfu = DataFileUtil(cls.callback_url, service_ver='dev')
-        cls.dfu.ws_name_to_id(cls.wsName)
+        cls.dfu = DataFileUtil(cls.callback_url)
         cls.gfu = GenomeFileUtil(cls.callback_url)
         cls.setupdata()
 
@@ -93,7 +92,7 @@ class ExprMatrixUtilsTest(unittest.TestCase):
                                                     'source': 'Ensembl',
                                                     'generate_ids_if_needed': 1,
                                                     'generate_missing_genes': 1
-                                                   })['genome_ref']
+                                                    })['genome_ref']
 
     # NOTE: According to Python unittest naming rules test method names should start from 'test'. # noqa
 
@@ -162,7 +161,6 @@ class ExprMatrixUtilsTest(unittest.TestCase):
         ci_kbasesets_exprset_obj_name = 'extracted_sampleset_tophat_alignment_set_expression_set'
 
         self.get_expr_matrix_success(appdev_kbasesets_exprset_ref, 'setapi_exprset_exprmat_output')
-
 
     def fail_getExprMat(self, params, error, exception=ValueError, do_startswith=False):
 
