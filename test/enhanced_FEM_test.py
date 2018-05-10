@@ -142,6 +142,13 @@ class ExprMatrixUtilsTest(unittest.TestCase):
             cls.fem_prov_ref = "{0}/{1}/{2}".format( fem_info[6], fem_info[0], fem_info[4] )
 
 
+    def fc_and_q_columns_are_all_NA( self, efem ):
+
+        for valrow in efem.get('data').get('values'):
+            if ( valrow[1] != 'NA' or valrow[2] != 'NA' ):
+                return( False )
+        return( True )
+        
     # NOTE: According to Python unittest naming rules test method names should start from 'test'. # noqa
 
     def get_enhancedFEM_tests( self ):
@@ -153,6 +160,7 @@ class ExprMatrixUtilsTest(unittest.TestCase):
         print "### testing good provenance...."
         ret = self.getImpl().get_enhancedFilteredExpressionMatrix( self.ctx, 
                                                             {'fem_object_ref': self.fem_prov_ref} )
+        self.assertFalse( self.fc_and_q_columns_are_all_NA( ret[0].get('enhanced_FEM' ) ) )
         print "### ret is {0}".format( pformat( ret ) )
 
         # this should succeed - no provenance link to DEM
@@ -160,6 +168,7 @@ class ExprMatrixUtilsTest(unittest.TestCase):
         print "### testing, no provenance...."
         ret = self.getImpl().get_enhancedFilteredExpressionMatrix( self.ctx, 
                                                             {'fem_object_ref': self.fem_no_prov_ref} )
+        self.assertTrue( self.fc_and_q_columns_are_all_NA( ret[0].get('enhanced_FEM' ) ) )
         print "### ret is {0}".format( pformat( ret ) )
 
         # this should fail: the one input parameter is missing..
