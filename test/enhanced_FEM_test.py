@@ -121,17 +121,21 @@ class ExprMatrixUtilsTest(unittest.TestCase):
             fem = json.load( fem_file )
             fem["genome_ref"] = cls.genome_ref
 
+            # fem data should not have diff_expr_matrix_ref, so we'll save without first
             # Save without DEM provenance
 
             fem_info = cls.dfu.save_objects( { 'id': cls.ws_id, 
                                                'objects': [ {'type': 'KBaseFeatureValues.ExpressionMatrix', 
                                                              'data': fem, 
-                                                             'name': 'fem_no_dem_prov'} ]
+                                                             'name': 'fem_no_dem',
+                                                             'extra_provenance_input_refs': [cls.dem_ref]
+                                                            } ]
                                            } )[0]
-            cls.fem_no_prov_ref = "{0}/{1}/{2}".format( fem_info[6], fem_info[0], fem_info[4] )
+            cls.fem_no_dem_ref = "{0}/{1}/{2}".format( fem_info[6], fem_info[0], fem_info[4] )
 
-            # Save with DEM provenance
+            # and now save WITH DEM  rever
 
+            fem["diff_expr_matrix_ref"] = cls.dem_ref
             fem_info = cls.dfu.save_objects( { 'id': cls.ws_id, 
                                                'objects': [ {'type': 'KBaseFeatureValues.ExpressionMatrix', 
                                                              'data': fem, 
@@ -139,7 +143,7 @@ class ExprMatrixUtilsTest(unittest.TestCase):
                                                              'extra_provenance_input_refs': [cls.dem_ref]
                                                           } ]
                                            } )[0]
-            cls.fem_prov_ref = "{0}/{1}/{2}".format( fem_info[6], fem_info[0], fem_info[4] )
+            cls.fem_dem_ref = "{0}/{1}/{2}".format( fem_info[6], fem_info[0], fem_info[4] )
 
 
     def fc_and_q_columns_are_all_NA( self, efem ):
@@ -159,7 +163,7 @@ class ExprMatrixUtilsTest(unittest.TestCase):
         
         print "### testing good provenance...."
         ret = self.getImpl().get_enhancedFilteredExpressionMatrix( self.ctx, 
-                                                            {'fem_object_ref': self.fem_prov_ref} )
+                                                            {'fem_object_ref': self.fem_dem_ref} )
         self.assertFalse( self.fc_and_q_columns_are_all_NA( ret[0].get('enhanced_FEM' ) ) )
         print "### ret is {0}".format( pformat( ret ) )
 
@@ -167,7 +171,7 @@ class ExprMatrixUtilsTest(unittest.TestCase):
 
         print "### testing, no provenance...."
         ret = self.getImpl().get_enhancedFilteredExpressionMatrix( self.ctx, 
-                                                            {'fem_object_ref': self.fem_no_prov_ref} )
+                                                            {'fem_object_ref': self.fem_no_dem_ref} )
         self.assertTrue( self.fc_and_q_columns_are_all_NA( ret[0].get('enhanced_FEM' ) ) )
         print "### ret is {0}".format( pformat( ret ) )
 

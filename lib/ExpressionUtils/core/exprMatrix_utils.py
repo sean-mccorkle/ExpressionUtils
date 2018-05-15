@@ -304,8 +304,13 @@ class ExprMatrixUtils:
         # then that should be a list of one DEM reference from which we get the FC and q values
         # as a feature (=row_id) -indexed dict.
 
-        if prov.get( 'resolved_ws_objects' ):
-            dem_ref = prov.get( 'resolved_ws_objects' )[0]
+        #if prov.get( 'resolved_ws_objects' ):
+        #    dem_ref = prov.get( 'resolved_ws_objects' )[0]
+        #    dem_obj_ret = self.dfu.get_objects( {'object_refs': [ dem_ref ] } ).get('data')[0]
+        #    dem = dem_obj_ret.get( 'data' )
+        #    dem_dict = self.convert_dem_to_dict( dem.get('data') )  # convert to dictionary for quick lookups
+        if fem.get( 'diff_expr_matrix_ref' ):
+            dem_ref = fem.get( 'diff_expr_matrix_ref' )
             dem_obj_ret = self.dfu.get_objects( {'object_refs': [ dem_ref ] } ).get('data')[0]
             dem = dem_obj_ret.get( 'data' )
             dem_dict = self.convert_dem_to_dict( dem.get('data') )  # convert to dictionary for quick lookups
